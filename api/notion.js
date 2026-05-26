@@ -1,4 +1,4 @@
-export default async function handler(req, res) {
+xport default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS, GET');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
@@ -28,7 +28,7 @@ export default async function handler(req, res) {
   if (!token || !dbid) return res.status(400).json({ message: 'Token y database ID son requeridos.' });
 
   const sortProp = sortby === 'Fecha'
-    ? { property: 'Fecha', direction: 'ascending' }
+    ? { property: 'Date', direction: 'ascending' }
     : { property: 'Orden', direction: 'ascending' };
 
   try {
@@ -49,7 +49,7 @@ export default async function handler(req, res) {
     if (!dbRes.ok) return res.status(dbRes.status).json({ message: data.message || 'Error de Notion.' });
 
     const pages = data.results.map((page) => {
-      const files = page.properties?.Imagen?.files || [];
+      const files = page.properties?.Image?.files || [];
       let rawUrl = null;
 
       if (files.length > 0) {
