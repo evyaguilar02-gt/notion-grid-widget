@@ -14,14 +14,17 @@ module.exports = async function handler(req, res) {
   try {
     var token = req.body.token;
     var dbid = req.body.dbid;
+    var red = req.body.red || 'Instagram';
 
     if (!token || !dbid) {
       return res.status(400).json({ message: 'Token y database ID son requeridos.' });
     }
 
+    var formatosValidos = ['Reel', 'Post', 'Carrusel'];
+
     var body = JSON.stringify({
-      sorts: [{ property: 'Date', direction: 'descending' }],
-      page_size: 9
+      sorts: [{ property: 'Fecha', direction: 'descending' }],
+      page_size: 50
     });
 
     var options = {
@@ -55,10 +58,44 @@ module.exports = async function handler(req, res) {
       return res.status(data.status).json({ message: data.body.message || 'Error de Notion.' });
     }
 
-    var pages = data.body.results.map(function(page) {
+    var filtrados = data.body.results.filter(function(page) {
+      var props = page.properties;
+      if (!props) return false;
+
+      // Debe tener Fecha
+      var fechaProp = props.Fecha;
+      if (!fechaProp || !fechaProp.date || !fechaProp.date.start) return false;
+
+      // Debe tener Status
+      var statusProp = props.Status;
+      if (!statusProp) return false;
+      var statusNombre = '';
+      if (statusProp.status && statusProp.status.name) statusNombre = statusProp.status.name;
+      if (!statusNombre) return false;
+
+      // Debe tener Red = Instagram (o la red seleccionada)
+      var redProp = props.Red;
+      if (!redProp) return false;
+      var redNombre = '';
+      if (redProp.select && redProp.select.name) redNombre = redProp.select.name;
+      else if (redProp.multi_select && redProp.multi_select.length > 0) redNombre = redProp.multi_select[0].name;
+      if (redNombre !== red) return false;
+
+      // Debe tener Formato válido
+      var formatoProp = props.Formato;
+      if (!formatoProp) return false;
+      var formatoNombre = '';
+      if (formatoProp.select && formatoProp.select.name) formatoNombre = formatoProp.select.name;
+      else if (formatoProp.multi_select && formatoProp.multi_select.length > 0) formatoNombre = formatoProp.multi_select[0].name;
+      if (!formatosValidos.includes(formatoNombre)) return false;
+
+      return true;
+    });
+
+    var pages = filtrados.slice(0, 9).map(function(page) {
       var files = [];
-      if (page.properties && page.properties.Image && page.properties.Image.files) {
-        files = page.properties.Image.files;
+      if (page.properties && page.properties.Imagen && page.properties.Imagen.files) {
+        files = page.properties.Imagen.files;
       }
       var rawUrl = null;
 
