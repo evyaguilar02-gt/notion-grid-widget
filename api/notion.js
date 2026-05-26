@@ -126,8 +126,7 @@ module.exports = async function handler(req, res) {
         }
       }
 
-      page._resolvedImg = rawUrl ? '/api/notion?proxy=' + encodeURIComponent(rawUrl) + '&token=' + encodeURIComponent(token) : null;
-      return page;
+      page._directImg = rawUrl || null;
     });
 
     return res.status(200).json({ results: pages });
