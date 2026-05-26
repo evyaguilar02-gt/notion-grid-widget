@@ -4,161 +4,58 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Instagram Grid Preview</title>
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css" />
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #fafafa; display: flex; justify-content: center; padding: 2rem 1rem; min-height: 100vh; }
-    .container { width: 100%; max-width: 480px; }
-    .header { text-align: center; margin-bottom: 1.5rem; }
-    .header h1 { font-size: 15px; font-weight: 600; color: #111; letter-spacing: -0.01em; }
-    .header p { font-size: 12px; color: #888; margin-top: 3px; }
-    .setup-card { background: #fff; border: 1px solid #e5e5e5; border-radius: 12px; padding: 1.25rem; margin-bottom: 1.25rem; }
-    .input-group { margin-bottom: 10px; }
-    .input-label { font-size: 12px; color: #666; margin-bottom: 4px; display: block; }
-    .input-field { width: 100%; font-size: 13px; padding: 8px 10px; border-radius: 8px; border: 1px solid #e0e0e0; background: #fafafa; color: #111; font-family: monospace; }
-    .input-field:focus { outline: none; border-color: #aaa; }
-    .sort-row { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; }
-    .sort-label { font-size: 12px; color: #666; }
-    .sort-select { font-size: 12px; padding: 5px 8px; border-radius: 8px; border: 1px solid #e0e0e0; background: #fafafa; color: #111; }
-    .btn-refresh { width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #e0e0e0; background: #111; color: #fff; font-size: 13px; font-weight: 500; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; }
-    .btn-refresh:hover { background: #333; }
-    .error-msg { font-size: 12px; color: #c0392b; background: #fdf0ee; border-radius: 8px; padding: 8px 10px; margin-top: 8px; }
-    .grid-wrap { display: grid; grid-template-columns: repeat(3, 1fr); gap: 3px; border-radius: 8px; overflow: hidden; }
-    .cell { position: relative; aspect-ratio: 1; background: #efefef; overflow: hidden; }
-    .cell img { width: 100%; height: 100%; object-fit: cover; display: block; }
-    .cell-empty { display: flex; align-items: center; justify-content: center; }
-    .cell-empty i { font-size: 22px; color: #bbb; }
-    .dot { position: absolute; top: 6px; right: 6px; width: 10px; height: 10px; border-radius: 50%; border: 2px solid rgba(255,255,255,0.9); }
+    .wrap { width: 100%; max-width: 420px; }
+
+    /* Setup card */
+    .setup { background: #fff; border: 1px solid #e5e5e5; border-radius: 12px; padding: 1.25rem; margin-bottom: 1.5rem; }
+    .setup h2 { font-size: 13px; font-weight: 600; color: #888; text-transform: uppercase; letter-spacing: .06em; margin-bottom: 12px; }
+    .field { margin-bottom: 10px; }
+    .field label { display: block; font-size: 12px; color: #666; margin-bottom: 4px; }
+    .field input, .field select { width: 100%; font-size: 13px; padding: 8px 10px; border-radius: 8px; border: 1px solid #ddd; background: #fafafa; color: #111; font-family: monospace; }
+    .btn { width: 100%; padding: 10px; border-radius: 8px; border: none; background: #111; color: #fff; font-size: 13px; font-weight: 600; cursor: pointer; margin-top: 4px; }
+    .btn:hover { background: #333; }
+    .error { font-size: 12px; color: #c0392b; background: #fdf0ee; border-radius: 8px; padding: 8px 10px; margin-top: 8px; }
+
+    /* Instagram UI */
+    .ig-card { background: #fff; border: 1px solid #dbdbdb; border-radius: 12px; overflow: hidden; }
+
+    /* Header */
+    .ig-header { padding: 16px; display: flex; align-items: center; gap: 16px; border-bottom: 1px solid #efefef; }
+    .ig-avatar { width: 64px; height: 64px; border-radius: 50%; background: linear-gradient(45deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888); padding: 2px; flex-shrink: 0; }
+    .ig-avatar-inner { width: 100%; height: 100%; border-radius: 50%; background: #fff; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+    .ig-avatar-inner img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; }
+    .ig-avatar-inner span { font-size: 22px; font-weight: 700; color: #888; }
+    .ig-stats { display: flex; gap: 16px; }
+    .ig-stat { text-align: center; }
+    .ig-stat strong { display: block; font-size: 14px; font-weight: 700; color: #111; }
+    .ig-stat span { font-size: 11px; color: #666; }
+    .ig-info { margin-top: 4px; }
+    .ig-username { font-size: 14px; font-weight: 700; color: #111; }
+    .ig-bio { font-size: 12px; color: #333; margin-top: 2px; line-height: 1.4; }
+
+    /* Tabs */
+    .ig-tabs { display: flex; border-bottom: 1px solid #efefef; }
+    .ig-tab { flex: 1; display: flex; align-items: center; justify-content: center; padding: 10px; cursor: pointer; border-bottom: 2px solid transparent; }
+    .ig-tab.active { border-bottom: 2px solid #111; }
+    .ig-tab svg { width: 22px; height: 22px; stroke: #999; fill: none; stroke-width: 1.5; }
+    .ig-tab.active svg { stroke: #111; }
+
+    /* Grid */
+    .ig-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 2px; }
+    .ig-cell { position: relative; aspect-ratio: 1; background: #efefef; overflow: hidden; cursor: pointer; }
+    .ig-cell img { width: 100%; height: 100%; object-fit: cover; display: block; transition: opacity .2s; }
+    .ig-cell:hover img { opacity: .85; }
+    .ig-cell-empty { display: flex; align-items: center; justify-content: center; }
+    .ig-cell-empty svg { width: 24px; height: 24px; stroke: #ccc; fill: none; stroke-width: 1.5; }
+    .dot { position: absolute; top: 6px; right: 6px; width: 9px; height: 9px; border-radius: 50%; border: 1.5px solid rgba(255,255,255,.9); }
     .dot-published { background: #22c55e; }
     .dot-scheduled { background: #f59e0b; }
     .dot-draft { background: #94a3b8; }
-    .cell-label { position: absolute; bottom: 0; left: 0; right: 0; padding: 4px 6px; font-size: 10px; color: #fff; background: linear-gradient(transparent, rgba(0,0,0,0.6)); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .legend { display: flex; gap: 14px; margin-top: 10px; justify-content: center; }
-    .legend-item { display: flex; align-items: center; gap: 5px; font-size: 11px; color: #888; }
-    .legend-dot { width: 8px; height: 8px; border-radius: 50%; }
-    .status-msg { font-size: 13px; color: #888; text-align: center; padding: 2rem 0; grid-column: 1 / -1; }
-    .powered { text-align: center; margin-top: 1.5rem; font-size: 11px; color: #bbb; }
-    .powered span { color: #888; font-weight: 500; }
-  </style>
-</head>
-<body>
-<div class="container">
-  <div class="header">
-    <h1>Instagram Grid Preview</h1>
-    <p>Conecta tu Content Planner de Notion</p>
-  </div>
+    .reel-icon { position: absolute; top: 5px; left: 5px; }
+    .reel-icon svg { width: 14px; height: 14px; fill: #fff; filter: drop-shadow(0 1px 2px rgba(0,0,0,.5)); }
 
-  <div class="setup-card">
-    <div class="input-group">
-      <label class="input-label">Token de integración</label>
-      <input class="input-field" id="token" type="password" placeholder="secret_xxxxxxxxxxxxxxxx" />
-    </div>
-    <div class="input-group">
-      <label class="input-label">Database ID</label>
-      <input class="input-field" id="dbid" type="text" placeholder="36cea83ddf6d800c..." />
-    </div>
-    <div class="sort-row">
-      <span class="sort-label">Ordenar por</span>
-      <select class="sort-select" id="sortby">
-        <option value="Orden">Orden (número)</option>
-        <option value="Fecha">Fecha</option>
-      </select>
-    </div>
-    <button class="btn-refresh" onclick="loadGrid()">
-      ↻ Actualizar preview
-    </button>
-    <div id="error-box"></div>
-  </div>
-
-  <div class="grid-wrap" id="grid">
-    <div class="cell cell-empty"><i class="ti ti-photo"></i></div>
-    <div class="cell cell-empty"><i class="ti ti-photo"></i></div>
-    <div class="cell cell-empty"><i class="ti ti-photo"></i></div>
-    <div class="cell cell-empty"><i class="ti ti-photo"></i></div>
-    <div class="cell cell-empty"><i class="ti ti-photo"></i></div>
-    <div class="cell cell-empty"><i class="ti ti-photo"></i></div>
-    <div class="cell cell-empty"><i class="ti ti-photo"></i></div>
-    <div class="cell cell-empty"><i class="ti ti-photo"></i></div>
-    <div class="cell cell-empty"><i class="ti ti-photo"></i></div>
-  </div>
-
-  <div class="legend">
-    <div class="legend-item"><div class="legend-dot" style="background:#22c55e"></div> Published</div>
-    <div class="legend-item"><div class="legend-dot" style="background:#f59e0b"></div> Scheduled</div>
-    <div class="legend-item"><div class="legend-dot" style="background:#94a3b8"></div> Draft</div>
-  </div>
-
-  <div class="powered">Widget by <span>evelynaguilar.com</span></div>
-</div>
-
-<script>
-function dotClass(status) {
-  if (!status) return 'dot-draft';
-  const s = status.toLowerCase();
-  if (s === 'published') return 'dot-published';
-  if (s === 'scheduled') return 'dot-scheduled';
-  return 'dot-draft';
-}
-
-async function loadGrid() {
-  const token = document.getElementById('token').value.trim();
-  const dbid = document.getElementById('dbid').value.trim().replace(/-/g, '');
-  const sortby = document.getElementById('sortby').value;
-  const errBox = document.getElementById('error-box');
-  const grid = document.getElementById('grid');
-
-  errBox.innerHTML = '';
-
-  if (!token || !dbid) {
-    errBox.innerHTML = '<div class="error-msg">Ingresa el token y el database ID para continuar.</div>';
-    return;
-  }
-
-  grid.innerHTML = '<div class="status-msg">Cargando...</div>';
-
-  try {
-    const res = await fetch('/api/notion', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ token, dbid, sortby })
-    });
-
-    const data = await res.json();
-
-    if (!res.ok) {
-      errBox.innerHTML = `<div class="error-msg">${data.message || 'Error al conectar con Notion.'}</div>`;
-      grid.innerHTML = emptyGrid();
-      return;
-    }
-
-    const pages = data.results;
-    if (!pages || !pages.length) {
-      grid.innerHTML = '<div class="status-msg">No hay entradas aún. Agrega posts a tu Content Planner.</div>';
-      return;
-    }
-
-    grid.innerHTML = Array(9).fill(null).map((_, i) => {
-      const page = pages[i];
-      if (!page) return '<div class="cell cell-empty"><i class="ti ti-plus"></i></div>';
-      const imgUrl = page._resolvedImg || null;
-      const status = page.properties?.Estado?.select?.name || 'Draft';
-      const nombre = page.properties?.Nombre?.title?.[0]?.plain_text || '';
-      const dot = dotClass(status);
-      if (imgUrl) {
-        return `<div class="cell"><img src="${imgUrl}" alt="${nombre}" loading="lazy" /><div class="dot ${dot}"></div>${nombre ? `<div class="cell-label">${nombre}</div>` : ''}</div>`;
-      }
-      return `<div class="cell cell-empty"><i class="ti ti-photo"></i><div class="dot ${dot}" style="position:absolute;top:6px;right:6px;"></div></div>`;
-    }).join('');
-
-  } catch(e) {
-    errBox.innerHTML = '<div class="error-msg">Error de conexión. Verifica tu token e intenta de nuevo.</div>';
-    grid.innerHTML = emptyGrid();
-  }
-}
-
-function emptyGrid() {
-  return Array(9).fill('<div class="cell cell-empty"><i class="ti ti-photo"></i></div>').join('');
-}
-</script>
-</body>
-</html>
+    /* Legend */
+    .legend { display: flex; gap: 14px; justify
