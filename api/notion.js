@@ -3,26 +3,18 @@ export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
 
-  if (req.method === 'OPTIONS') {
-    return res.status(200).end();
-  }
-
-  if (req.method !== 'POST') {
-    return res.status(405).json({ message: 'Method not allowed' });
-  }
+  if (req.method === 'OPTIONS') return res.status(200).end();
+  if (req.method !== 'POST') return res.status(405).json({ message: 'Method not allowed' });
 
   const { token, dbid, sortby } = req.body;
-
-  if (!token || !dbid) {
-    return res.status(400).json({ message: 'Token y database ID son requeridos.' });
-  }
+  if (!token || !dbid) return res.status(400).json({ message: 'Token y database ID son requeridos.' });
 
   const sortProp = sortby === 'Fecha'
     ? { property: 'Fecha', direction: 'ascending' }
     : { property: 'Orden', direction: 'ascending' };
 
   try {
-    const response = await fetch(`https://api.notion.com/v1/databases/${dbid}/query`, {
+    const dbRes = await fetch(`https://api.notion.com/v1/databases/${dbid}/query`, {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${token}`,
@@ -35,13 +27,32 @@ export default async function handler(req, res) {
       })
     });
 
-    const data = await response.json();
+    const data = await dbRes.json();
+    if (!dbRes.ok) return res.status(dbRes.status).json({ message: data.message || 'Error de Notion.' });
 
-    if (!response.ok) {
-      return res.status(response.status).json({ message: data.message || 'Error de Notion.' });
-    }
+    const pages = await Promise.all(data.results.map(async (page) => {
+      const files = page.properties?.Imagen?.files || [];
+      let imgUrl = null;
 
-    return res.status(200).json(data);
+      if (files.length > 0) {
+        const file = files[0];
+        if (file.type === 'external') {
+          imgUrl = file.external?.url || null;
+        } else if (file.type === 'file') {
+          imgUrl = file.file?.url || null;
+        }
+      }
+
+      if (!imgUrl && page.cover) {
+        imgUrl = page.cover.type === 'external'
+          ? page.cover.external?.url
+          : page.cover.file?.url;
+      }
+
+      return { ...page, _resolvedImg: imgUrl };
+    }));
+
+    return res.status(200).json({ results: pages });
 
   } catch (error) {
     return res.status(500).json({ message: 'Error interno del servidor.' });
