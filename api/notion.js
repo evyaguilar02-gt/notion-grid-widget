@@ -17,7 +17,7 @@ module.exports = async function handler(req, res) {
       res.setHeader('Cache-Control', 's-maxage=3600, stale-while-revalidate');
       const buffer = await imageRes.arrayBuffer();
       return res.send(Buffer.from(buffer));
-    } catch {
+    } catch(e) {
       return res.status(500).end();
     }
   }
@@ -29,7 +29,7 @@ module.exports = async function handler(req, res) {
 
   const sortProp = sortby === 'Fecha'
     ? { property: 'Date', direction: 'ascending' }
-    : { property: 'Orden', direction: 'ascending' };
+    : { property: 'Date', direction: 'ascending' };
 
   try {
     const dbRes = await fetch(https://api.notion.com/v1/databases/${dbid}/query, {
@@ -40,7 +40,7 @@ module.exports = async function handler(req, res) {
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({
-        sorts: [{ property: sortProp.property, direction: sortProp.direction }],
+        sorts: [{ property: 'Date', direction: 'ascending' }],
         page_size: 9
       })
     });
@@ -77,4 +77,4 @@ module.exports = async function handler(req, res) {
   } catch (error) {
     return res.status(500).json({ message: 'Error interno del servidor.' });
   }
-}
+};
