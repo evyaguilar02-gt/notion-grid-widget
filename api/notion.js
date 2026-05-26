@@ -1,12 +1,36 @@
 const https = require('https');
+const http = require('http');
+const url = require('url');
 
 module.exports = async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS, GET');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
 
-  if (req.method === 'OPTIONS') {
-    return res.status(200).end();
+  if (req.method === 'OPTIONS') return res.status(200).end();
+
+  if (req.method === 'GET' && req.query && req.query.proxy) {
+    var imageUrl = decodeURIComponent(req.query.proxy);
+    var parsed = url.parse(imageUrl);
+    var client = parsed.protocol === 'https:' ? https : http;
+
+    return new Promise(function(resolve) {
+      var request = client.get(imageUrl, function(response) {
+        if (response.statusCode !== 200) {
+          res.status(404).end();
+          return resolve();
+        }
+        var contentType = response.headers['content-type'] || 'image/jpeg';
+        res.setHeader('Content-Type', contentType);
+        res.setHeader('Cache-Control', 's-maxage=3500');
+        response.pipe(res);
+        response.on('end', resolve);
+      });
+      request.on('error', function() {
+        res.status(500).end();
+        resolve();
+      });
+    });
   }
 
   if (req.method !== 'POST') {
@@ -81,8 +105,7 @@ module.exports = async function handler(req, res) {
         }
       }
 
-      var resolvedImg = rawUrl ? '/api/notion?proxy=' + encodeURIComponent(rawUrl) : null;
-      page._resolvedImg = resolvedImg;
+      page._resolvedImg = rawUrl ? '/api/notion?proxy=' + encodeURIComponent(rawUrl) : null;
       return page;
     });
 
