@@ -11,13 +11,37 @@ module.exports = async function handler(req, res) {
 
   if (req.method === 'GET' && req.query && req.query.proxy) {
     var imageUrl = decodeURIComponent(req.query.proxy);
+    var notionToken = req.query.token ? decodeURIComponent(req.query.token) : '';
     var parsed = url.parse(imageUrl);
     var client = parsed.protocol === 'https:' ? https : http;
 
     return new Promise(function(resolve) {
-      var request = client.get(imageUrl, function(response) {
+      var imgOptions = {
+        hostname: parsed.hostname,
+        path: parsed.path + (parsed.search || ''),
+        headers: {
+          'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36',
+          'Authorization': notionToken ? 'Bearer ' + notionToken : ''
+        }
+      };
+
+      var request = client.get(imgOptions, function(response) {
+        if (response.statusCode === 301 || response.statusCode === 302) {
+          var redirectUrl = response.headers.location;
+          var redirectParsed = url.parse(redirectUrl);
+          var redirectClient = redirectParsed.protocol === 'https:' ? https : http;
+          var redirectRequest = redirectClient.get(redirectUrl, function(redirectResponse) {
+            var contentType = redirectResponse.headers['content-type'] || 'image/jpeg';
+            res.setHeader('Content-Type', contentType);
+            res.setHeader('Cache-Control', 's-maxage=3500');
+            redirectResponse.pipe(res);
+            redirectResponse.on('end', resolve);
+          });
+          redirectRequest.on('error', function() { res.status(500).end(); resolve(); });
+          return;
+        }
         if (response.statusCode !== 200) {
-          res.status(404).end();
+          res.status(response.statusCode).end();
           return resolve();
         }
         var contentType = response.headers['content-type'] || 'image/jpeg';
@@ -26,10 +50,7 @@ module.exports = async function handler(req, res) {
         response.pipe(res);
         response.on('end', resolve);
       });
-      request.on('error', function() {
-        res.status(500).end();
-        resolve();
-      });
+      request.on('error', function() { res.status(500).end(); resolve(); });
     });
   }
 
@@ -105,7 +126,7 @@ module.exports = async function handler(req, res) {
         }
       }
 
-      page._resolvedImg = rawUrl ? '/api/notion?proxy=' + encodeURIComponent(rawUrl) : null;
+      page._resolvedImg = rawUrl ? '/api/notion?proxy=' + encodeURIComponent(rawUrl) + '&token=' + encodeURIComponent(token) : null;
       return page;
     });
 
