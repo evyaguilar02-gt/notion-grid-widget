@@ -14,39 +14,38 @@ module.exports = async function handler(req, res) {
   }
 
   try {
-    const { token, dbid } = req.body;
+    var token = req.body.token;
+    var dbid = req.body.dbid;
 
     if (!token || !dbid) {
       return res.status(400).json({ message: 'Token y database ID son requeridos.' });
     }
 
-    const body = JSON.stringify({
+    var body = JSON.stringify({
       sorts: [{ property: 'Date', direction: 'ascending' }],
       page_size: 9
     });
 
-    const options = {
+    var options = {
       hostname: 'api.notion.com',
-      path: /v1/databases/${dbid}/query,
+      path: '/v1/databases/' + dbid + '/query',
       method: 'POST',
       headers: {
-        'Authorization': Bearer ${token},
+        'Authorization': 'Bearer ' + token,
         'Notion-Version': '2022-06-28',
         'Content-Type': 'application/json',
         'Content-Length': Buffer.byteLength(body)
       }
     };
 
-    const data = await new Promise((resolve, reject) => {
-      const request = https.request(options, (response) => {
-        let rawData = '';
-        response.on('data', (chunk) => { rawData += chunk; });
-        response.on('end', () => {
+    var data = await new Promise(function(resolve, reject) {
+      var request = https.request(options, function(response) {
+        var rawData = '';
+        response.on('data', function(chunk) { rawData += chunk; });
+        response.on('end', function() {
           try {
             resolve({ status: response.statusCode, body: JSON.parse(rawData) });
-          } catch (e) {
-            reject(e);
-          }
+          } catch(e) { reject(e); }
         });
       });
       request.on('error', reject);
@@ -58,26 +57,38 @@ module.exports = async function handler(req, res) {
       return res.status(data.status).json({ message: data.body.message || 'Error de Notion.' });
     }
 
-    const pages = data.body.results.map((page) => {
-      const files = page.properties?.Image?.files || [];
-      let rawUrl = null;
+    var pages = data.body.results.map(function(page) {
+      var files = [];
+      if (page.properties && page.properties.Image && page.properties.Image.files) {
+        files = page.properties.Image.files;
+      }
+      var rawUrl = null;
 
       if (files.length > 0) {
-        const file = files[0];
-        rawUrl = file.type === 'external' ? file.external?.url : file.file?.url;
+        var file = files[0];
+        if (file.type === 'external' && file.external) {
+          rawUrl = file.external.url;
+        } else if (file.file) {
+          rawUrl = file.file.url;
+        }
       }
 
       if (!rawUrl && page.cover) {
-        rawUrl = page.cover.type === 'external' ? page.cover.external?.url : page.cover.file?.url;
+        if (page.cover.type === 'external' && page.cover.external) {
+          rawUrl = page.cover.external.url;
+        } else if (page.cover.file) {
+          rawUrl = page.cover.file.url;
+        }
       }
 
-      const _resolvedImg = rawUrl ? /api/notion?proxy=${encodeURIComponent(rawUrl)} : null;
-      return { ...page, _resolvedImg };
+      var resolvedImg = rawUrl ? '/api/notion?proxy=' + encodeURIComponent(rawUrl) : null;
+      page._resolvedImg = resolvedImg;
+      return page;
     });
 
     return res.status(200).json({ results: pages });
 
-  } catch (error) {
+  } catch(error) {
     return res.status(500).json({ message: 'Error: ' + error.message });
   }
 };
