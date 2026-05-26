@@ -1,58 +1,11 @@
 const https = require('https');
-const http = require('http');
-const url = require('url');
 
 module.exports = async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS, GET');
+  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
 
   if (req.method === 'OPTIONS') return res.status(200).end();
-
-  if (req.method === 'GET' && req.query && req.query.proxy) {
-    var imageUrl = decodeURIComponent(req.query.proxy);
-    var notionToken = req.query.token ? decodeURIComponent(req.query.token) : '';
-    var parsed = url.parse(imageUrl);
-    var client = parsed.protocol === 'https:' ? https : http;
-
-    return new Promise(function(resolve) {
-      var imgOptions = {
-        hostname: parsed.hostname,
-        path: parsed.path + (parsed.search || ''),
-        headers: {
-          'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36',
-          'Authorization': notionToken ? 'Bearer ' + notionToken : ''
-        }
-      };
-
-      var request = client.get(imgOptions, function(response) {
-        if (response.statusCode === 301 || response.statusCode === 302) {
-          var redirectUrl = response.headers.location;
-          var redirectParsed = url.parse(redirectUrl);
-          var redirectClient = redirectParsed.protocol === 'https:' ? https : http;
-          var redirectRequest = redirectClient.get(redirectUrl, function(redirectResponse) {
-            var contentType = redirectResponse.headers['content-type'] || 'image/jpeg';
-            res.setHeader('Content-Type', contentType);
-            res.setHeader('Cache-Control', 's-maxage=3500');
-            redirectResponse.pipe(res);
-            redirectResponse.on('end', resolve);
-          });
-          redirectRequest.on('error', function() { res.status(500).end(); resolve(); });
-          return;
-        }
-        if (response.statusCode !== 200) {
-          res.status(response.statusCode).end();
-          return resolve();
-        }
-        var contentType = response.headers['content-type'] || 'image/jpeg';
-        res.setHeader('Content-Type', contentType);
-        res.setHeader('Cache-Control', 's-maxage=3500');
-        response.pipe(res);
-        response.on('end', resolve);
-      });
-      request.on('error', function() { res.status(500).end(); resolve(); });
-    });
-  }
 
   if (req.method !== 'POST') {
     return res.status(405).json({ message: 'Method not allowed' });
@@ -127,6 +80,7 @@ module.exports = async function handler(req, res) {
       }
 
       page._directImg = rawUrl || null;
+      return page;
     });
 
     return res.status(200).json({ results: pages });
