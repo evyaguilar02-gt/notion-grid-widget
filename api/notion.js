@@ -20,7 +20,7 @@ module.exports = async function handler(req, res) {
     }
 
     var body = JSON.stringify({
-      sorts: [{ property: 'Date', direction: 'ascending' }],
+      sorts: [{ property: 'Date', direction: 'descending' }],
       page_size: 9
     });
 
