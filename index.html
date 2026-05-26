@@ -3,22 +3,7 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
-<title>Instagram Grid Preview</title>
-<style>
-*{box-sizing:border-box;margin:0;padding:0}
-body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#fafafa;display:flex;justify-content:center;padding:2rem 1rem;min-height:100vh}
-.wrap{width:100%;max-width:420px}
-.setup{background:#fff;border:1px solid #e5e5e5;border-radius:12px;padding:1.25rem;margin-bottom:1.5rem}
-.setup h2{font-size:13px;font-weight:600;color:#888;text-transform:uppercase;letter-spacing:.06em;margin-bottom:12px}
-.field{margin-bottom:10px}
-.field label{display:block;font-size:12px;color:#666;margin-bottom:4px}
-.field input,.field sele…
-[16:43, 26/5/2026] Evelyn Aguilar: <!DOCTYPE html>
-<html lang="es">
-<head>
-<meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
-<title>Instagram Grid Preview</title>
+<title>Feed Preview · The Creator Vault</title>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#fafafa;display:flex;justify-content:center;padding:2rem 1rem;min-height:100vh}
@@ -54,9 +39,9 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .ig-cell-empty{display:flex;align-items:center;justify-content:center}
 .ig-cell-empty svg{width:24px;height:24px;stroke:#ccc;fill:none;stroke-width:1.5}
 .dot{position:absolute;top:8px;right:8px;width:12px;height:12px;border-radius:50%;border:2px solid #fff;box-shadow:0 1px 3px rgba(0,0,0,.3)}
-.dot-published{background:#22c55e}
-.dot-scheduled{background:#f59e0b}
-.dot-draft{background:#94a3b8}
+.dot-publicado{background:#22c55e}
+.dot-programado{background:#f59e0b}
+.dot-proceso{background:#94a3b8}
 .legend{display:flex;gap:14px;justify-content:center;padding:10px;border-top:1px solid #efefef}
 .legend-item{display:flex;align-items:center;gap:5px;font-size:11px;color:#888}
 .legend-dot{width:9px;height:9px;border-radius:50%}
@@ -69,9 +54,16 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 <div class="setup">
 <h2>Configuración</h2>
 <div class="field"><label>Token de integración</label><input id="token" type="password" placeholder="secret_xxxxxxxxxxxxxxxx"/></div>
-<div class="field"><label>Database ID</label><input id="dbid" type="text" placeholder="36cea83ddf6d800c..."/></div>
-<div class="field"><label>Username</label><input id="username" type="text" placeholder="@tu_usuario"/></div>
+<div class="field"><label>Database ID</label><input id="dbid" type="text" placeholder="ID de tu base de datos"/></div>
+<div class="field"><label>Usuario</label><input id="username" type="text" placeholder="@tu_usuario"/></div>
 <div class="field"><label>Bio</label><input id="bio" type="text" placeholder="Social Media Manager · UGC Creator · Tu nicho ✨"/></div>
+<div class="field"><label>Red social</label><select id="red">
+<option value="Instagram">Instagram</option>
+<option value="TikTok">TikTok</option>
+<option value="YouTube">YouTube</option>
+<option value="LinkedIn">LinkedIn</option>
+<option value="Facebook">Facebook</option>
+</select></div>
 <div class="field"><label>Ordenar por</label><select id="sortby"><option value="desc">Más reciente primero</option><option value="asc">Más antiguo primero</option></select></div>
 <button id="btnLoad">↻ Actualizar preview</button>
 <div id="error-box"></div>
@@ -112,9 +104,9 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 </div>
 
 <div class="legend">
-<div class="legend-item"><div class="legend-dot" style="background:#22c55e"></div>Published</div>
-<div class="legend-item"><div class="legend-dot" style="background:#f59e0b"></div>Scheduled</div>
-<div class="legend-item"><div class="legend-dot" style="background:#94a3b8"></div>Draft</div>
+<div class="legend-item"><div class="legend-dot" style="background:#22c55e"></div>Publicado</div>
+<div class="legend-item"><div class="legend-dot" style="background:#f59e0b"></div>Programado</div>
+<div class="legend-item"><div class="legend-dot" style="background:#94a3b8"></div>En Proceso</div>
 </div>
 </div>
 
@@ -143,19 +135,19 @@ el.classList.add('active');
 }
 
 function getStatus(properties){
-if(!properties||!properties.Status)return 'Draft';
+if(!properties||!properties.Status)return '';
 var s=properties.Status;
 if(s.status&&s.status.name)return s.status.name;
 if(s.select&&s.select.name)return s.select.name;
-return 'Draft';
+return '';
 }
 
 function dotClass(s){
-if(!s)return 'dot-draft';
+if(!s)return 'dot-proceso';
 s=s.toLowerCase();
-if(s==='published')return 'dot-published';
-if(s==='scheduled')return 'dot-scheduled';
-return 'dot-draft';
+if(s==='publicado')return 'dot-publicado';
+if(s==='programado')return 'dot-programado';
+return 'dot-proceso';
 }
 
 function emptyGrid(){
@@ -167,6 +159,7 @@ function loadGrid(){
 var token=document.getElementById('token').value.trim();
 var dbid=document.getElementById('dbid').value.trim().replace(/-/g,'');
 var sortby=document.getElementById('sortby').value;
+var red=document.getElementById('red').value;
 var username=document.getElementById('username').value.trim();
 var bio=document.getElementById('bio').value.trim();
 var errBox=document.getElementById('error-box');
@@ -187,7 +180,7 @@ grid.innerHTML='<div style="grid-column:1/-1;text-align:center;padding:2rem;font
 fetch('/api/notion',{
 method:'POST',
 headers:{'Content-Type':'application/json'},
-body:JSON.stringify({token:token,dbid:dbid,sortby:sortby})
+body:JSON.stringify({token:token,dbid:dbid,sortby:sortby,red:red})
 })
 .then(function(res){return res.json().then(function(data){return{ok:res.ok,data:data}})})
 .then(function(result){
@@ -198,7 +191,7 @@ return;
 }
 var pages=result.data.results;
 if(!pages||!pages.length){
-grid.innerHTML='<div style="grid-column:1/-1;text-align:center;padding:2rem;font-size:13px;color:#888">No hay entradas aún.</div>';
+grid.innerHTML='<div style="grid-column:1/-1;text-align:center;padding:2rem;font-size:13px;color:#888">No hay entradas para esta red aún.</div>';
 return;
 }
 document.getElementById('post-count').textContent=pages.length;
@@ -223,6 +216,6 @@ grid.innerHTML=emptyGrid();
 });
 }
 </script>
-<!-- build v6 -->
+<!-- build v7 -->
 </body>
 </html>
