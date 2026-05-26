@@ -1,4 +1,19 @@
-<!DOCTYPE html>
+[15:40, 26/5/2026] Evelyn Aguilar: <!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Instagram Grid Preview</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#fafafa;display:flex;justify-content:center;padding:2rem 1rem;min-height:100vh}
+.wrap{width:100%;max-width:420px}
+.setup{background:#fff;border:1px solid #e5e5e5;border-radius:12px;padding:1.25rem;margin-bottom:1.5rem}
+.setup h2{font-size:13px;font-weight:600;color:#888;text-transform:uppercase;letter-spacing:.06em;margin-bottom:12px}
+.field{margin-bottom:10px}
+.field label{display:block;font-size:12px;color:#666;margin-bottom:4px}
+.field input,.field sele…
+[15:55, 26/5/2026] Evelyn Aguilar: <!DOCTYPE html>
 <html lang="es">
 <head>
 <meta charset="UTF-8"/>
@@ -56,7 +71,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 <div class="field"><label>Token de integración</label><input id="token" type="password" placeholder="secret_xxxxxxxxxxxxxxxx"/></div>
 <div class="field"><label>Database ID</label><input id="dbid" type="text" placeholder="36cea83ddf6d800c..."/></div>
 <div class="field"><label>Username</label><input id="username" type="text" placeholder="@tu_usuario"/></div>
-<div class="field"><label>Bio</label><input id="bio" type="text" placeholder="Creadora UGC · Tu ciudad 🌎"/></div>
+<div class="field"><label>Bio</label><input id="bio" type="text" placeholder="Social Media Manager · UGC Creator · Tu nicho ✨"/></div>
 <div class="field"><label>Ordenar por</label><select id="sortby"><option value="desc">Más reciente primero</option><option value="asc">Más antiguo primero</option></select></div>
 <button id="btnLoad">↻ Actualizar preview</button>
 <div id="error-box"></div>
@@ -113,92 +128,93 @@ document.getElementById('tab3').addEventListener('click',function(){switchTab(th
 document.getElementById('btnLoad').addEventListener('click',function(){loadGrid()});
 
 document.getElementById('username').addEventListener('input',function(){
-  var val=this.value.trim();
-  document.getElementById('display-username').textContent=val||'@tu_usuario';
-  document.getElementById('avatar-letter').textContent=val?val.charAt(val.indexOf('@')+1)||val.charAt(0):'@';
+var val=this.value.trim();
+document.getElementById('display-username').textContent=val||'@tu_usuario';
+document.getElementById('avatar-letter').textContent=val?val.replace('@','').charAt(0).toUpperCase():'@';
 });
 
 document.getElementById('bio').addEventListener('input',function(){
-  document.getElementById('display-bio').textContent=this.value.trim()||'Tu bio aquí ✨';
+document.getElementById('display-bio').textContent=this.value.trim()||'Tu bio aquí ✨';
 });
 
 function switchTab(el){
-  document.querySelectorAll('.ig-tab').forEach(function(t){t.classList.remove('active')});
-  el.classList.add('active');
+document.querySelectorAll('.ig-tab').forEach(function(t){t.classList.remove('active')});
+el.classList.add('active');
 }
 
 function dotClass(s){
-  if(!s)return 'dot-draft';
-  s=s.toLowerCase();
-  if(s==='published')return 'dot-published';
-  if(s==='scheduled')return 'dot-scheduled';
-  return 'dot-draft';
+if(!s)return 'dot-draft';
+s=s.toLowerCase();
+if(s==='published')return 'dot-published';
+if(s==='scheduled')return 'dot-scheduled';
+return 'dot-draft';
 }
 
 function emptyGrid(){
-  var c='<div class="ig-cell ig-cell-empty"><svg viewBox="0 0 24 24" style="width:24px;height:24px;stroke:#ccc;fill:none;stroke-width:1.5"><rect x="3" y="3" width="18" height="18" rx="2"/></svg></div>';
-  var h='';for(var i=0;i<9;i++)h+=c;return h;
+var c='<div class="ig-cell ig-cell-empty"><svg viewBox="0 0 24 24" style="width:24px;height:24px;stroke:#ccc;fill:none;stroke-width:1.5"><rect x="3" y="3" width="18" height="18" rx="2"/></svg></div>';
+var h='';for(var i=0;i<9;i++)h+=c;return h;
 }
 
 function loadGrid(){
-  var token=document.getElementById('token').value.trim();
-  var dbid=document.getElementById('dbid').value.trim().replace(/-/g,'');
-  var sortby=document.getElementById('sortby').value;
-  var username=document.getElementById('username').value.trim();
-  var bio=document.getElementById('bio').value.trim();
-  var errBox=document.getElementById('error-box');
-  var grid=document.getElementById('grid');
+var token=document.getElementById('token').value.trim();
+var dbid=document.getElementById('dbid').value.trim().replace(/-/g,'');
+var sortby=document.getElementById('sortby').value;
+var username=document.getElementById('username').value.trim();
+var bio=document.getElementById('bio').value.trim();
+var errBox=document.getElementById('error-box');
+var grid=document.getElementById('grid');
 
-  errBox.innerHTML='';
+errBox.innerHTML='';
 
-  if(username)document.getElementById('display-username').textContent=username;
-  if(bio)document.getElementById('display-bio').textContent=bio;
+if(username)document.getElementById('display-username').textContent=username;
+if(bio)document.getElementById('display-bio').textContent=bio;
 
-  if(!token||!dbid){
-    errBox.innerHTML='<div class="error">Ingresa el token y el database ID.</div>';
-    return;
-  }
+if(!token||!dbid){
+errBox.innerHTML='<div class="error">Ingresa el token y el database ID.</div>';
+return;
+}
 
-  grid.innerHTML='<div style="grid-column:1/-1;text-align:center;padding:2rem;font-size:13px;color:#888">Cargando...</div>';
+grid.innerHTML='<div style="grid-column:1/-1;text-align:center;padding:2rem;font-size:13px;color:#888">Cargando...</div>';
 
-  fetch('/api/notion',{
-    method:'POST',
-    headers:{'Content-Type':'application/json'},
-    body:JSON.stringify({token:token,dbid:dbid,sortby:sortby})
-  })
-  .then(function(res){return res.json().then(function(data){return{ok:res.ok,data:data}})})
-  .then(function(result){
-    if(!result.ok){
-      errBox.innerHTML='<div class="error">'+(result.data.message||'Error al conectar.')+'</div>';
-      grid.innerHTML=emptyGrid();
-      return;
-    }
-    var pages=result.data.results;
-    if(!pages||!pages.length){
-      grid.innerHTML='<div style="grid-column:1/-1;text-align:center;padding:2rem;font-size:13px;color:#888">No hay entradas aún.</div>';
-      return;
-    }
-    document.getElementById('post-count').textContent=pages.length;
-    var html='';
-    for(var i=0;i<9;i++){
-      var page=pages[i];
-      if(!page){html+='<div class="ig-cell ig-cell-empty"><svg viewBox="0 0 24 24" style="width:24px;height:24px;stroke:#ddd;fill:none;stroke-width:1.5"><rect x="3" y="3" width="18" height="18" rx="2"/></svg></div>';continue;}
-      var imgUrl=page._directImg||null;
-      var status=page.properties&&page.properties.Status&&page.properties.Status.select?page.properties.Status.select.name:'Draft';
-      var dot=dotClass(status);
-      if(imgUrl){
-        html+='<div class="ig-cell"><img src="'+imgUrl+'" loading="lazy"/><div class="dot '+dot+'"></div></div>';
-      }else{
-        html+='<div class="ig-cell ig-cell-empty"><svg viewBox="0 0 24 24" style="width:24px;height:24px;stroke:#ccc;fill:none;stroke-width:1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21,15 16,10 5,21"/></svg><div class="dot '+dot+'" style="position:absolute;top:6px;right:6px;"></div></div>';
-      }
-    }
-    grid.innerHTML=html;
-  })
-  .catch(function(){
-    errBox.innerHTML='<div class="error">Error de conexión.</div>';
-    grid.innerHTML=emptyGrid();
-  });
+fetch('/api/notion',{
+method:'POST',
+headers:{'Content-Type':'application/json'},
+body:JSON.stringify({token:token,dbid:dbid,sortby:sortby})
+})
+.then(function(res){return res.json().then(function(data){return{ok:res.ok,data:data}})})
+.then(function(result){
+if(!result.ok){
+errBox.innerHTML='<div class="error">'+(result.data.message||'Error al conectar.')+'</div>';
+grid.innerHTML=emptyGrid();
+return;
+}
+var pages=result.data.results;
+if(!pages||!pages.length){
+grid.innerHTML='<div style="grid-column:1/-1;text-align:center;padding:2rem;font-size:13px;color:#888">No hay entradas aún.</div>';
+return;
+}
+document.getElementById('post-count').textContent=pages.length;
+var html='';
+for(var i=0;i<9;i++){
+var page=pages[i];
+if(!page){html+='<div class="ig-cell ig-cell-empty"><svg viewBox="0 0 24 24" style="width:24px;height:24px;stroke:#ddd;fill:none;stroke-width:1.5"><rect x="3" y="3" width="18" height="18" rx="2"/></svg></div>';continue;}
+var imgUrl=page._directImg||null;
+var status=page.properties&&page.properties.Status&&page.properties.Status.select?page.properties.Status.select.name:'Draft';
+var dot=dotClass(status);
+if(imgUrl){
+html+='<div class="ig-cell"><img src="'+imgUrl+'" loading="lazy"/><div class="dot '+dot+'"></div></div>';
+}else{
+html+='<div class="ig-cell ig-cell-empty"><svg viewBox="0 0 24 24" style="width:24px;height:24px;stroke:#ccc;fill:none;stroke-width:1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21,15 16,10 5,21"/></svg><div class="dot '+dot+'" style="position:absolute;top:6px;right:6px;"></div></div>';
+}
+}
+grid.innerHTML=html;
+})
+.catch(function(){
+errBox.innerHTML='<div class="error">Error de conexión.</div>';
+grid.innerHTML=emptyGrid();
+});
 }
 </script>
+<!-- build v4 -->
 </body>
 </html>
