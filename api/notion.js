@@ -73,21 +73,30 @@ module.exports = async function handler(req, res) {
       if (statusProp.status && statusProp.status.name) statusNombre = statusProp.status.name;
       if (!statusNombre) return false;
 
-      // Debe tener Red = Instagram (o la red seleccionada)
+      // Red debe incluir la red seleccionada (multi-select)
       var redProp = props.Red;
       if (!redProp) return false;
-      var redNombre = '';
-      if (redProp.select && redProp.select.name) redNombre = redProp.select.name;
-      else if (redProp.multi_select && redProp.multi_select.length > 0) redNombre = redProp.multi_select[0].name;
-      if (redNombre !== red) return false;
+      var redesSeleccionadas = [];
+      if (redProp.multi_select && redProp.multi_select.length > 0) {
+        redesSeleccionadas = redProp.multi_select.map(function(r){ return r.name; });
+      } else if (redProp.select && redProp.select.name) {
+        redesSeleccionadas = [redProp.select.name];
+      }
+      if (redesSeleccionadas.indexOf(red) === -1) return false;
 
-      // Debe tener Formato válido
+      // Formato debe ser válido (multi-select)
       var formatoProp = props.Formato;
       if (!formatoProp) return false;
-      var formatoNombre = '';
-      if (formatoProp.select && formatoProp.select.name) formatoNombre = formatoProp.select.name;
-      else if (formatoProp.multi_select && formatoProp.multi_select.length > 0) formatoNombre = formatoProp.multi_select[0].name;
-      if (!formatosValidos.includes(formatoNombre)) return false;
+      var formatosSeleccionados = [];
+      if (formatoProp.multi_select && formatoProp.multi_select.length > 0) {
+        formatosSeleccionados = formatoProp.multi_select.map(function(f){ return f.name; });
+      } else if (formatoProp.select && formatoProp.select.name) {
+        formatosSeleccionados = [formatoProp.select.name];
+      }
+      var tieneFormatoValido = formatosSeleccionados.some(function(f){
+        return formatosValidos.indexOf(f) !== -1;
+      });
+      if (!tieneFormatoValido) return false;
 
       return true;
     });
