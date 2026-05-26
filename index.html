@@ -140,8 +140,7 @@ async function loadGrid() {
     grid.innerHTML = Array(9).fill(null).map((_, i) => {
       const page = pages[i];
       if (!page) return '<div class="cell cell-empty"><i class="ti ti-plus"></i></div>';
-      const files = page.properties?.Imagen?.files || [];
-      const imgUrl = files[0]?.file?.url || files[0]?.external?.url || null;
+      const imgUrl = page._resolvedImg || null;
       const status = page.properties?.Estado?.select?.name || 'Draft';
       const nombre = page.properties?.Nombre?.title?.[0]?.plain_text || '';
       const dot = dotClass(status);
