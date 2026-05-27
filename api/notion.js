@@ -1,4 +1,4 @@
-const https = require('https');
+[12:19, 27/5/2026] Evelyn Aguilar: const https = require('https');
 
 module.exports = async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -16,10 +16,33 @@ module.exports = async function handler(req, res) {
     if (!token || !dbid) return res.status(400).json({ message: 'Token y database ID son requeridos.' });
 
     var formatosValidos = ['Reel', 'Post', 'Carrusel'];
-    var statusValidos = ['🚀 Publicado', '🎬 En Producción', '⏰ Programado', 'Publicado', 'En Producción', 'Programado', 'Published', 'Scheduled', 'En Proceso'];
+    var statusValidos = ['🚀 Publicado', '🎬 En Producción', '…
+[12:27, 27/5/2026] Evelyn Aguilar: const https = require('https');
 
-    // Red sin emoji para comparación flexible
-    var redSinEmoji = red.replace(/[\u{1F300}-\u{1FFFF}]/gu, '').trim();
+module.exports = async function handler(req, res) {
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+
+  if (req.method === 'OPTIONS') return res.status(200).end();
+  if (req.method !== 'POST') return res.status(405).json({ message: 'Method not allowed' });
+
+  try {
+    var token = req.body.token;
+    var dbid = req.body.dbid;
+    var red = req.body.red || '📱 Instagram';
+
+    if (!token || !dbid) return res.status(400).json({ message: 'Token y database ID son requeridos.' });
+
+    var formatosValidos = ['reel', 'post', 'carrusel'];
+    var statusValidos = ['publicado', 'en producción', 'programado', 'en proceso', 'published', 'scheduled'];
+
+    function limpiar(str) {
+      if (!str) return '';
+      return str.replace(/[^\w\sáéíóúüñÁÉÍÓÚÜÑ]/g, '').trim().toLowerCase();
+    }
+
+    var redBuscada = limpiar(red);
 
     var body = JSON.stringify({
       sorts: [{ property: 'Fecha', direction: 'descending' }],
@@ -62,43 +85,34 @@ module.exports = async function handler(req, res) {
       var fechaProp = props.Fecha;
       if (!fechaProp || !fechaProp.date || !fechaProp.date.start) return false;
 
-      // Status debe ser válido
+      // Status válido
       var statusProp = props.Status;
       if (!statusProp) return false;
       var statusNombre = '';
       if (statusProp.status && statusProp.status.name) statusNombre = statusProp.status.name;
       else if (statusProp.select && statusProp.select.name) statusNombre = statusProp.select.name;
       if (!statusNombre) return false;
-      var statusSinEmoji = statusNombre.replace(/[\u{1F300}-\u{1FFFF}]/gu, '').trim();
-      var statusValido = statusValidos.some(function(v){
-        var vSinEmoji = v.replace(/[\u{1F300}-\u{1FFFF}]/gu, '').trim();
-        return statusNombre === v || statusSinEmoji === vSinEmoji;
-      });
-      if (!statusValido) return false;
+      if (statusValidos.indexOf(limpiar(statusNombre)) === -1) return false;
 
-      // Red debe incluir la red seleccionada (flexible con/sin emoji)
+      // Red incluye la seleccionada
       var redProp = props.Red;
       if (!redProp) return false;
       var redesSeleccionadas = [];
       if (redProp.multi_select && redProp.multi_select.length > 0) {
-        redesSeleccionadas = redProp.multi_select.map(function(r){ return r.name; });
+        redesSeleccionadas = redProp.multi_select.map(function(r){ return limpiar(r.name); });
       } else if (redProp.select && redProp.select.name) {
-        redesSeleccionadas = [redProp.select.name];
+        redesSeleccionadas = [limpiar(redProp.select.name)];
       }
-      var tieneRed = redesSeleccionadas.some(function(r){
-        var rSinEmoji = r.replace(/[\u{1F300}-\u{1FFFF}]/gu, '').trim();
-        return r === red || rSinEmoji === redSinEmoji;
-      });
-      if (!tieneRed) return false;
+      if (redesSeleccionadas.indexOf(redBuscada) === -1) return false;
 
-      // Formato debe ser válido
+      // Formato válido — excluye Historia
       var formatoProp = props.Formato;
       if (!formatoProp) return false;
       var formatosSeleccionados = [];
       if (formatoProp.multi_select && formatoProp.multi_select.length > 0) {
-        formatosSeleccionados = formatoProp.multi_select.map(function(f){ return f.name; });
+        formatosSeleccionados = formatoProp.multi_select.map(function(f){ return limpiar(f.name); });
       } else if (formatoProp.select && formatoProp.select.name) {
-        formatosSeleccionados = [formatoProp.select.name];
+        formatosSeleccionados = [limpiar(formatoProp.select.name)];
       }
       var tieneFormatoValido = formatosSeleccionados.some(function(f){
         return formatosValidos.indexOf(f) !== -1;
@@ -123,7 +137,16 @@ module.exports = async function handler(req, res) {
         if (page.cover.type === 'external' && page.cover.external) rawUrl = page.cover.external.url;
         else if (page.cover.file) rawUrl = page.cover.file.url;
       }
+
+      // Guardar formato limpio para el widget
+      var formatoProp = page.properties && page.properties.Formato;
+      var formatoNombre = '';
+      if (formatoProp) {
+        if (formatoProp.multi_select && formatoProp.multi_select.length > 0) formatoNombre = formatoProp.multi_select[0].name;
+        else if (formatoProp.select && formatoProp.select.name) formatoNombre = formatoProp.select.name;
+      }
       page._directImg = rawUrl || null;
+      page._formato = limpiar(formatoNombre);
       return page;
     });
 
