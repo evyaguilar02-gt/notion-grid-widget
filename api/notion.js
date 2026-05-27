@@ -1,4 +1,4 @@
-[12:19, 27/5/2026] Evelyn Aguilar: const https = require('https');
+const https = require('https');
 
 module.exports = async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -11,35 +11,23 @@ module.exports = async function handler(req, res) {
   try {
     var token = req.body.token;
     var dbid = req.body.dbid;
-    var red = req.body.red || '📱 Instagram';
-
-    if (!token || !dbid) return res.status(400).json({ message: 'Token y database ID son requeridos.' });
-
-    var formatosValidos = ['Reel', 'Post', 'Carrusel'];
-    var statusValidos = ['🚀 Publicado', '🎬 En Producción', '…
-[12:27, 27/5/2026] Evelyn Aguilar: const https = require('https');
-
-module.exports = async function handler(req, res) {
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
-
-  if (req.method === 'OPTIONS') return res.status(200).end();
-  if (req.method !== 'POST') return res.status(405).json({ message: 'Method not allowed' });
-
-  try {
-    var token = req.body.token;
-    var dbid = req.body.dbid;
-    var red = req.body.red || '📱 Instagram';
+    var red = req.body.red || 'Instagram';
 
     if (!token || !dbid) return res.status(400).json({ message: 'Token y database ID son requeridos.' });
 
     var formatosValidos = ['reel', 'post', 'carrusel'];
-    var statusValidos = ['publicado', 'en producción', 'programado', 'en proceso', 'published', 'scheduled'];
+    var statusValidos = ['publicado', 'en producci', 'programado', 'en proceso', 'published', 'scheduled'];
 
     function limpiar(str) {
       if (!str) return '';
-      return str.replace(/[^\w\sáéíóúüñÁÉÍÓÚÜÑ]/g, '').trim().toLowerCase();
+      var resultado = '';
+      for (var i = 0; i < str.length; i++) {
+        var code = str.charCodeAt(i);
+        if (code < 127 || (code >= 160 && code <= 591)) {
+          resultado += str[i].toLowerCase();
+        }
+      }
+      return resultado.trim();
     }
 
     var redBuscada = limpiar(red);
@@ -81,20 +69,19 @@ module.exports = async function handler(req, res) {
       var props = page.properties;
       if (!props) return false;
 
-      // Debe tener Fecha
       var fechaProp = props.Fecha;
       if (!fechaProp || !fechaProp.date || !fechaProp.date.start) return false;
 
-      // Status válido
       var statusProp = props.Status;
       if (!statusProp) return false;
       var statusNombre = '';
       if (statusProp.status && statusProp.status.name) statusNombre = statusProp.status.name;
       else if (statusProp.select && statusProp.select.name) statusNombre = statusProp.select.name;
       if (!statusNombre) return false;
-      if (statusValidos.indexOf(limpiar(statusNombre)) === -1) return false;
+      var statusLimpio = limpiar(statusNombre);
+      var statusValido = statusValidos.some(function(v){ return statusLimpio.indexOf(v) !== -1; });
+      if (!statusValido) return false;
 
-      // Red incluye la seleccionada
       var redProp = props.Red;
       if (!redProp) return false;
       var redesSeleccionadas = [];
@@ -105,7 +92,6 @@ module.exports = async function handler(req, res) {
       }
       if (redesSeleccionadas.indexOf(redBuscada) === -1) return false;
 
-      // Formato válido — excluye Historia
       var formatoProp = props.Formato;
       if (!formatoProp) return false;
       var formatosSeleccionados = [];
@@ -138,7 +124,6 @@ module.exports = async function handler(req, res) {
         else if (page.cover.file) rawUrl = page.cover.file.url;
       }
 
-      // Guardar formato limpio para el widget
       var formatoProp = page.properties && page.properties.Formato;
       var formatoNombre = '';
       if (formatoProp) {
