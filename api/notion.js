@@ -6,21 +6,17 @@ module.exports = async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
 
   if (req.method === 'OPTIONS') return res.status(200).end();
-
-  if (req.method !== 'POST') {
-    return res.status(405).json({ message: 'Method not allowed' });
-  }
+  if (req.method !== 'POST') return res.status(405).json({ message: 'Method not allowed' });
 
   try {
     var token = req.body.token;
     var dbid = req.body.dbid;
     var red = req.body.red || 'Instagram';
 
-    if (!token || !dbid) {
-      return res.status(400).json({ message: 'Token y database ID son requeridos.' });
-    }
+    if (!token || !dbid) return res.status(400).json({ message: 'Token y database ID son requeridos.' });
 
     var formatosValidos = ['Reel', 'Post', 'Carrusel'];
+    var statusValidos = ['🚀 Publicado', '🎬 En Producción', '⏰ Programado'];
 
     var body = JSON.stringify({
       sorts: [{ property: 'Fecha', direction: 'descending' }],
@@ -44,9 +40,8 @@ module.exports = async function handler(req, res) {
         var rawData = '';
         response.on('data', function(chunk) { rawData += chunk; });
         response.on('end', function() {
-          try {
-            resolve({ status: response.statusCode, body: JSON.parse(rawData) });
-          } catch(e) { reject(e); }
+          try { resolve({ status: response.statusCode, body: JSON.parse(rawData) }); }
+          catch(e) { reject(e); }
         });
       });
       request.on('error', reject);
@@ -54,9 +49,7 @@ module.exports = async function handler(req, res) {
       request.end();
     });
 
-    if (data.status !== 200) {
-      return res.status(data.status).json({ message: data.body.message || 'Error de Notion.' });
-    }
+    if (data.status !== 200) return res.status(data.status).json({ message: data.body.message || 'Error de Notion.' });
 
     var filtrados = data.body.results.filter(function(page) {
       var props = page.properties;
@@ -66,14 +59,14 @@ module.exports = async function handler(req, res) {
       var fechaProp = props.Fecha;
       if (!fechaProp || !fechaProp.date || !fechaProp.date.start) return false;
 
-      // Debe tener Status
+      // Status debe ser uno de los válidos
       var statusProp = props.Status;
       if (!statusProp) return false;
       var statusNombre = '';
       if (statusProp.status && statusProp.status.name) statusNombre = statusProp.status.name;
-      if (!statusNombre) return false;
+      if (statusValidos.indexOf(statusNombre) === -1) return false;
 
-      // Red debe incluir la red seleccionada (multi-select)
+      // Red debe incluir la red seleccionada
       var redProp = props.Red;
       if (!redProp) return false;
       var redesSeleccionadas = [];
@@ -84,7 +77,7 @@ module.exports = async function handler(req, res) {
       }
       if (redesSeleccionadas.indexOf(red) === -1) return false;
 
-      // Formato debe ser válido (multi-select)
+      // Formato debe ser válido — Historia excluida siempre
       var formatoProp = props.Formato;
       if (!formatoProp) return false;
       var formatosSeleccionados = [];
@@ -107,24 +100,15 @@ module.exports = async function handler(req, res) {
         files = page.properties.Imagen.files;
       }
       var rawUrl = null;
-
       if (files.length > 0) {
         var file = files[0];
-        if (file.type === 'external' && file.external) {
-          rawUrl = file.external.url;
-        } else if (file.file) {
-          rawUrl = file.file.url;
-        }
+        if (file.type === 'external' && file.external) rawUrl = file.external.url;
+        else if (file.file) rawUrl = file.file.url;
       }
-
       if (!rawUrl && page.cover) {
-        if (page.cover.type === 'external' && page.cover.external) {
-          rawUrl = page.cover.external.url;
-        } else if (page.cover.file) {
-          rawUrl = page.cover.file.url;
-        }
+        if (page.cover.type === 'external' && page.cover.external) rawUrl = page.cover.external.url;
+        else if (page.cover.file) rawUrl = page.cover.file.url;
       }
-
       page._directImg = rawUrl || null;
       return page;
     });
