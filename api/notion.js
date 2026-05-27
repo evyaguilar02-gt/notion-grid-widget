@@ -16,7 +16,10 @@ module.exports = async function handler(req, res) {
     if (!token || !dbid) return res.status(400).json({ message: 'Token y database ID son requeridos.' });
 
     var formatosValidos = ['Reel', 'Post', 'Carrusel'];
-    var statusValidos = ['🚀 Publicado', '🎬 En Producción', '⏰ Programado'];
+    var statusValidos = ['🚀 Publicado', '🎬 En Producción', '⏰ Programado', 'Publicado', 'En Producción', 'Programado', 'Published', 'Scheduled', 'En Proceso'];
+
+    // Red sin emoji para comparación flexible
+    var redSinEmoji = red.replace(/[\u{1F300}-\u{1FFFF}]/gu, '').trim();
 
     var body = JSON.stringify({
       sorts: [{ property: 'Fecha', direction: 'descending' }],
@@ -55,15 +58,25 @@ module.exports = async function handler(req, res) {
       var props = page.properties;
       if (!props) return false;
 
+      // Debe tener Fecha
       var fechaProp = props.Fecha;
       if (!fechaProp || !fechaProp.date || !fechaProp.date.start) return false;
 
+      // Status debe ser válido
       var statusProp = props.Status;
       if (!statusProp) return false;
       var statusNombre = '';
       if (statusProp.status && statusProp.status.name) statusNombre = statusProp.status.name;
-      if (statusValidos.indexOf(statusNombre) === -1) return false;
+      else if (statusProp.select && statusProp.select.name) statusNombre = statusProp.select.name;
+      if (!statusNombre) return false;
+      var statusSinEmoji = statusNombre.replace(/[\u{1F300}-\u{1FFFF}]/gu, '').trim();
+      var statusValido = statusValidos.some(function(v){
+        var vSinEmoji = v.replace(/[\u{1F300}-\u{1FFFF}]/gu, '').trim();
+        return statusNombre === v || statusSinEmoji === vSinEmoji;
+      });
+      if (!statusValido) return false;
 
+      // Red debe incluir la red seleccionada (flexible con/sin emoji)
       var redProp = props.Red;
       if (!redProp) return false;
       var redesSeleccionadas = [];
@@ -72,8 +85,13 @@ module.exports = async function handler(req, res) {
       } else if (redProp.select && redProp.select.name) {
         redesSeleccionadas = [redProp.select.name];
       }
-      if (redesSeleccionadas.indexOf(red) === -1) return false;
+      var tieneRed = redesSeleccionadas.some(function(r){
+        var rSinEmoji = r.replace(/[\u{1F300}-\u{1FFFF}]/gu, '').trim();
+        return r === red || rSinEmoji === redSinEmoji;
+      });
+      if (!tieneRed) return false;
 
+      // Formato debe ser válido
       var formatoProp = props.Formato;
       if (!formatoProp) return false;
       var formatosSeleccionados = [];
