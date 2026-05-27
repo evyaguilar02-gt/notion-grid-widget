@@ -12,7 +12,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .setup h2{font-size:13px;font-weight:600;color:#888;text-transform:uppercase;letter-spacing:.06em;margin-bottom:12px}
 .field{margin-bottom:10px}
 .field label{display:block;font-size:12px;color:#666;margin-bottom:4px}
-.field input,.field select{width:100%;font-size:13px;padding:8px 10px;border-radius:8px;border:1px solid #ddd;background:#fafafa;color:#111;font-family:monospace}
+.field input,.field select{width:100%;font-size:13px;padding:8px 10px;border-radius:8px;border:1px solid #ddd;background:#fafafa;color:#111}
 #btnLoad{width:100%;padding:10px;border-radius:8px;border:none;background:#111;color:#fff;font-size:13px;font-weight:600;cursor:pointer;margin-top:4px}
 #btnLoad:hover{background:#333}
 .error{font-size:12px;color:#c0392b;background:#fdf0ee;border-radius:8px;padding:8px 10px;margin-top:8px}
@@ -33,7 +33,6 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .ig-tab.active{border-bottom:2px solid #111}
 .ig-tab svg{width:22px;height:22px;stroke:#999;fill:none;stroke-width:1.5}
 .ig-tab.active svg{stroke:#111}
-.ig-tab span{font-size:18px;line-height:1}
 .ig-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:2px}
 .ig-cell{position:relative;aspect-ratio:3/4;background:#efefef;overflow:hidden;cursor:pointer}
 .ig-cell img{width:100%;height:100%;object-fit:cover;display:block}
@@ -41,7 +40,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .ig-cell-empty svg{width:24px;height:24px;stroke:#ccc;fill:none;stroke-width:1.5}
 .format-icon{position:absolute;top:6px;right:6px;filter:drop-shadow(0 1px 2px rgba(0,0,0,.6))}
 .format-icon svg{width:18px;height:18px}
-.status-pill{position:absolute;bottom:6px;left:6px;padding:2px 7px;border-radius:20px;font-size:9px;font-weight:600;letter-spacing:.02em;backdrop-filter:blur(4px);white-space:nowrap}
+.status-pill{position:absolute;bottom:6px;left:6px;padding:2px 7px;border-radius:20px;font-size:9px;font-weight:600;backdrop-filter:blur(4px);white-space:nowrap}
 .pill-publicado{background:rgba(34,197,94,.85);color:#fff}
 .pill-programado{background:rgba(245,158,11,.85);color:#fff}
 .pill-produccion{background:rgba(99,102,241,.85);color:#fff}
@@ -61,11 +60,11 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 <div class="field"><label>Usuario</label><input id="username" type="text" placeholder="@tu_usuario"/></div>
 <div class="field"><label>Bio</label><input id="bio" type="text" placeholder="Social Media Manager · UGC Creator · Tu nicho ✨"/></div>
 <div class="field"><label>Red social</label><select id="red">
-<option value="Instagram">Instagram</option>
-<option value="TikTok">TikTok</option>
-<option value="YouTube">YouTube</option>
-<option value="LinkedIn">LinkedIn</option>
-<option value="Facebook">Facebook</option>
+<option value="📱 Instagram">📱 Instagram</option>
+<option value="🎬 TikTok">🎬 TikTok</option>
+<option value="🔴 YouTube">🔴 YouTube</option>
+<option value="👥 LinkedIn">👥 LinkedIn</option>
+<option value="🔵 Facebook">🔵 Facebook</option>
 </select></div>
 <div class="field"><label>Ordenar por</label><select id="sortby"><option value="desc">Más reciente primero</option><option value="asc">Más antiguo primero</option></select></div>
 <button id="btnLoad">↻ Actualizar preview</button>
@@ -89,18 +88,10 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 </div>
 
 <div class="ig-tabs">
-<div class="ig-tab active" id="tab1">
-<svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
-</div>
-<div class="ig-tab" id="tab2">
-<svg viewBox="0 0 24 24"><rect x="2" y="2" width="20" height="20" rx="5" fill="none" stroke-width="1.5"/><polygon points="10,8 16,12 10,16" fill="currentColor" stroke="none"/></svg>
-</div>
-<div class="ig-tab" id="tab3">
-<svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M17 2l4 4-4 4"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><path d="M7 22l-4-4 4-4"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg>
-</div>
-<div class="ig-tab" id="tab4">
-<svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-</div>
+<div class="ig-tab active" id="tab1"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg></div>
+<div class="ig-tab" id="tab2"><svg viewBox="0 0 24 24"><rect x="2" y="2" width="20" height="20" rx="5" fill="none" stroke-width="1.5"/><polygon points="10,8 16,12 10,16" fill="currentColor" stroke="none"/></svg></div>
+<div class="ig-tab" id="tab3"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M17 2l4 4-4 4"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><path d="M7 22l-4-4 4-4"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg></div>
+<div class="ig-tab" id="tab4"><svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></div>
 </div>
 
 <div class="ig-grid" id="grid">
@@ -164,7 +155,6 @@ return '';
 }
 
 function pillClass(s){
-if(!s)return 'pill-produccion';
 if(s==='🚀 Publicado')return 'pill-publicado';
 if(s==='⏰ Programado')return 'pill-programado';
 return 'pill-produccion';
@@ -255,6 +245,6 @@ grid.innerHTML=emptyGrid();
 });
 }
 </script>
-<!-- build v9 -->
+<!-- build v10 -->
 </body>
 </html>
