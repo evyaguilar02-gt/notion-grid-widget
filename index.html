@@ -1,4 +1,23 @@
-<!DOCTYPE html>
+[12:27, 27/5/2026] Evelyn Aguilar: const https = require('https');
+
+module.exports = async function handler(req, res) {
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+
+  if (req.method === 'OPTIONS') return res.status(200).end();
+  if (req.method !== 'POST') return res.status(405).json({ message: 'Method not allowed' });
+
+  try {
+    var token = req.body.token;
+    var dbid = req.body.dbid;
+    var red = req.body.red || '📱 Instagram';
+
+    if (!token || !dbid) return res.status(400).json({ message: 'Token y database ID son requeridos.' });
+
+    var formatosValidos = ['reel', 'post', 'carrusel'];
+    var statusValidos = ['publicado', 'en producción', 'progra…
+[12:28, 27/5/2026] Evelyn Aguilar: <!DOCTYPE html>
 <html lang="es">
 <head>
 <meta charset="UTF-8"/>
@@ -39,7 +58,6 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .ig-cell-empty{display:flex;align-items:center;justify-content:center}
 .ig-cell-empty svg{width:24px;height:24px;stroke:#ccc;fill:none;stroke-width:1.5}
 .format-icon{position:absolute;top:6px;right:6px;filter:drop-shadow(0 1px 2px rgba(0,0,0,.6))}
-.format-icon svg{width:18px;height:18px}
 .status-pill{position:absolute;bottom:6px;left:6px;padding:2px 7px;border-radius:20px;font-size:9px;font-weight:600;backdrop-filter:blur(4px);white-space:nowrap}
 .pill-publicado{background:rgba(34,197,94,.85);color:#fff}
 .pill-programado{background:rgba(245,158,11,.85);color:#fff}
@@ -146,23 +164,17 @@ if(s.select&&s.select.name)return s.select.name;
 return '';
 }
 
-function getFormato(properties){
-if(!properties||!properties.Formato)return '';
-var f=properties.Formato;
-if(f.multi_select&&f.multi_select.length>0)return f.multi_select[0].name;
-if(f.select&&f.select.name)return f.select.name;
-return '';
-}
-
 function pillClass(s){
-if(s==='🚀 Publicado')return 'pill-publicado';
-if(s==='⏰ Programado')return 'pill-programado';
+var sl=(s||'').toLowerCase();
+if(sl.indexOf('publicado')!==-1)return 'pill-publicado';
+if(sl.indexOf('programado')!==-1)return 'pill-programado';
 return 'pill-produccion';
 }
 
 function pillText(s){
-if(s==='🚀 Publicado')return '🚀 Publicado';
-if(s==='⏰ Programado')return '⏰ Programado';
+var sl=(s||'').toLowerCase();
+if(sl.indexOf('publicado')!==-1)return '🚀 Publicado';
+if(sl.indexOf('programado')!==-1)return '⏰ Programado';
 return '🎬 En Producción';
 }
 
@@ -227,7 +239,7 @@ var page=pages[i];
 if(!page){html+='<div class="ig-cell ig-cell-empty"><svg viewBox="0 0 24 24" style="width:24px;height:24px;stroke:#ddd;fill:none;stroke-width:1.5"><rect x="3" y="3" width="18" height="18" rx="2"/></svg></div>';continue;}
 var imgUrl=page._directImg||null;
 var status=getStatus(page.properties);
-var formato=getFormato(page.properties);
+var formato=page._formato||'';
 var pill=pillClass(status);
 var pillTxt=pillText(status);
 var fmtIcon=formatIcon(formato);
@@ -245,6 +257,6 @@ grid.innerHTML=emptyGrid();
 });
 }
 </script>
-<!-- build v10 -->
+<!-- build v11 -->
 </body>
 </html>
