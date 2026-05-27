@@ -55,18 +55,15 @@ module.exports = async function handler(req, res) {
       var props = page.properties;
       if (!props) return false;
 
-      // Debe tener Fecha
       var fechaProp = props.Fecha;
       if (!fechaProp || !fechaProp.date || !fechaProp.date.start) return false;
 
-      // Status debe ser uno de los válidos
       var statusProp = props.Status;
       if (!statusProp) return false;
       var statusNombre = '';
       if (statusProp.status && statusProp.status.name) statusNombre = statusProp.status.name;
       if (statusValidos.indexOf(statusNombre) === -1) return false;
 
-      // Red debe incluir la red seleccionada
       var redProp = props.Red;
       if (!redProp) return false;
       var redesSeleccionadas = [];
@@ -77,7 +74,6 @@ module.exports = async function handler(req, res) {
       }
       if (redesSeleccionadas.indexOf(red) === -1) return false;
 
-      // Formato debe ser válido — Historia excluida siempre
       var formatoProp = props.Formato;
       if (!formatoProp) return false;
       var formatosSeleccionados = [];
