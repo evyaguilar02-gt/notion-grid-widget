@@ -60,138 +60,46 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 </head>
 <body>
 <div class="wrap" id="wrap"></div>
-
 <script>
-var REFRESH_MS = 5 * 60 * 1000;
+var REFRESH_MS = 5*60*1000;
 var refreshTimer = null;
 var countdownTimer = null;
 var nextRefresh = null;
 var currentConfig = {};
 
-function getParams() {
-  var params = {};
-  window.location.search.substring(1).split('&').forEach(function(p) {
-    var pair = p.split('=');
-    if (pair[0]) params[decodeURIComponent(pair[0])] = decodeURIComponent(pair[1] || '');
+function getParams(){
+  var p={};
+  window.location.search.substring(1).split('&').forEach(function(s){
+    var pair=s.split('=');
+    if(pair[0])p[decodeURIComponent(pair[0])]=decodeURIComponent(pair[1]||'');
   });
-  return params;
+  return p;
 }
 
-var params = getParams();
-var embedMode = !!(params.token && params.dbid);
+var params=getParams();
+var embedMode=!!(params.token&&params.dbid);
 
-function renderSetup() {
-  document.getElementById('wrap').innerHTML =
-    '<div class="setup">' +
-    '<h2>⚙️ Configuración</h2>' +
-    '<div class="field"><label>Token de integración</label><input id="p-token" type="password" placeholder="secret_xxxxxxxxxxxxxxxx"/></div>' +
-    '<div class="field"><label>Database ID</label><input id="p-dbid" type="text" placeholder="ID de tu base de datos"/></div>' +
-    '<div class="field"><label>Usuario</label><input id="p-username" type="text" placeholder="@tu_usuario"/></div>' +
-    '<div class="field"><label>Bio</label><input id="p-bio" type="text" placeholder="Social Media Manager · UGC Creator ✨"/></div>' +
-    '<div class="field"><label>Red social</label><select id="p-red">' +
-    '<option value="📱 Instagram">📱 Instagram</option>' +
-    '<option value="🎬 TikTok">🎬 TikTok</option>' +
-    '<option value="🔴 YouTube">🔴 YouTube</option>' +
-    '<option value="👥 LinkedIn">👥 LinkedIn</option>' +
-    '<option value="🔵 Facebook">🔵 Facebook</option>' +
-    '</select></div>' +
-    '<div class="field"><label>Ordenar por</label><select id="p-sortby">' +
-    '<option value="desc">Más reciente primero</option>' +
-    '<option value="asc">Más antiguo primero</option>' +
-    '</select></div>' +
-    '<button class="btn-primary" id="btn-preview">↻ Ver preview</button>' +
-    '<button class="btn-secondary" id="btn-genurl">🔗 Generar URL para Notion</button>' +
-    '<div id="url-output"></div>' +
-    '<div id="error-box"></div>' +
-    '</div>' +
-    '<div id="widget-area"></div>' +
-    '<div class="powered">Widget by <span>evelynaguilar.com</span></div>';
-
-  document.getElementById('btn-preview').addEventListener('click', function() {
-    var cfg = getFormConfig();
-    if (!cfg) return;
-    currentConfig = cfg;
-    loadGrid(cfg, 'widget-area');
-    startAutoRefresh(cfg);
-  });
-
-  document.getElementById('btn-genurl').addEventListener('click', function() {
-    var cfg = getFormConfig();
-    if (!cfg) return;
-    var url = window.location.origin + window.location.pathname +
-      '?token=' + encodeURIComponent(cfg.token) +
-      '&dbid=' + encodeURIComponent(cfg.dbid) +
-      '&username=' + encodeURIComponent(cfg.username) +
-      '&bio=' + encodeURIComponent(cfg.bio) +
-      '&red=' + encodeURIComponent(cfg.red) +
-      '&sortby=' + encodeURIComponent(cfg.sortby);
-    document.getElementById('url-output').innerHTML =
-      '<div class="success">✅ URL generada — cópiala y pégala en Notion con /embed:<br><br>' + url + '</div>';
-  });
+function pillClass(s){
+  if(!s)return 'pill-produccion';
+  var sl=s.replace(/[^\x00-\x7F]/g,'').toLowerCase().trim();
+  if(sl.indexOf('publicado')!==-1||sl.indexOf('published')!==-1)return 'pill-publicado';
+  if(sl.indexOf('programado')!==-1||sl.indexOf('scheduled')!==-1)return 'pill-programado';
+  return 'pill-produccion';
 }
 
-function getFormConfig() {
-  var token = document.getElementById('p-token').value.trim();
-  var dbid = document.getElementById('p-dbid').value.trim().replace(/-/g,'');
-  var username = document.getElementById('p-username').value.trim();
-  var bio = document.getElementById('p-bio').value.trim();
-  var red = document.getElementById('p-red').value;
-  var sortby = document.getElementById('p-sortby').value;
-  if (!token || !dbid) {
-    document.getElementById('error-box').innerHTML = '<div class="error">Ingresa el token y el database ID.</div>';
-    return null;
-  }
-  document.getElementById('error-box').innerHTML = '';
-  return { token: token, dbid: dbid, username: username, bio: bio, red: red, sortby: sortby };
+function pillText(s){
+  if(!s)return '🎬 En Producción';
+  var sl=s.replace(/[^\x00-\x7F]/g,'').toLowerCase().trim();
+  if(sl.indexOf('publicado')!==-1||sl.indexOf('published')!==-1)return '🚀 Publicado';
+  if(sl.indexOf('programado')!==-1||sl.indexOf('scheduled')!==-1)return '⏰ Programado';
+  return '🎬 En Producción';
 }
 
-function renderWidget(containerId, cfg, pages) {
-  var avatarLetter = cfg.username ? cfg.username.replace('@','').charAt(0).toUpperCase() : '@';
-  var username = cfg.username || '@tu_usuario';
-  var bio = cfg.bio || 'Tu bio aquí ✨';
-  var count = pages ? pages.length : '—';
-
-  var gridHtml = buildGrid(pages);
-
-  document.getElementById(containerId).innerHTML =
-    '<div class="ig-card">' +
-    '<div class="ig-header">' +
-    '<div class="ig-avatar"><div class="ig-avatar-inner"><span>' + avatarLetter + '</span></div></div>' +
-    '<div style="flex:1">' +
-    '<div class="ig-stats">' +
-    '<div class="ig-stat"><strong>' + count + '</strong><span>posts</span></div>' +
-    '<div class="ig-stat"><strong>—</strong><span>seguidores</span></div>' +
-    '<div class="ig-stat"><strong>—</strong><span>seguidos</span></div>' +
-    '</div>' +
-    '<div class="ig-info">' +
-    '<div class="ig-username">' + username + '</div>' +
-    '<div class="ig-bio">' + bio + '</div>' +
-    '</div></div></div>' +
-    '<div class="ig-toolbar">' +
-    '<span class="ig-timer" id="countdown-text">Auto-refresh en 5:00</span>' +
-    '<button class="ig-refresh-btn" id="btn-refresh"><svg viewBox="0 0 24 24"><path d="M23 4v6h-6"/><path d="M1 20v-6h6"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>Actualizar</button>' +
-    '</div>' +
-    '<div class="ig-tabs">' +
-    '<div class="ig-tab active" id="tab1"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg></div>' +
-    '<div class="ig-tab" id="tab2"><svg viewBox="0 0 24 24"><rect x="2" y="2" width="20" height="20" rx="5" fill="none" stroke-width="1.5"/><polygon points="10,8 16,12 10,16" fill="currentColor" stroke="none"/></svg></div>' +
-    '<div class="ig-tab" id="tab3"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M17 2l4 4-4 4"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><path d="M7 22l-4-4 4-4"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg></div>' +
-    '<div class="ig-tab" id="tab4"><svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></div>' +
-    '</div>' +
-    '<div class="ig-grid" id="grid-cells">' + gridHtml + '</div>' +
-    '<div class="legend">' +
-    '<div class="legend-item"><div class="legend-dot" style="background:#22c55e"></div>🚀 Publicado</div>' +
-    '<div class="legend-item"><div class="legend-dot" style="background:#f59e0b"></div>⏰ Programado</div>' +
-    '<div class="legend-item"><div class="legend-dot" style="background:#6366f1"></div>🎬 En Producción</div>' +
-    '</div></div>';
-
-  document.getElementById('tab1').addEventListener('click', function(){switchTab(this)});
-  document.getElementById('tab2').addEventListener('click', function(){switchTab(this)});
-  document.getElementById('tab3').addEventListener('click', function(){switchTab(this)});
-  document.getElementById('tab4').addEventListener('click', function(){switchTab(this)});
-  document.getElementById('btn-refresh').addEventListener('click', function(){
-    loadGrid(currentConfig, containerId);
-    resetAutoRefresh(currentConfig, containerId);
-  });
+function formatIcon(f){
+  f=(f||'').toLowerCase();
+  if(f.indexOf('reel')!==-1)return '<div class="format-icon"><svg viewBox="0 0 24 24" width="18" height="18"><rect x="1" y="1" width="22" height="22" rx="6" fill="rgba(0,0,0,0.55)"/><polygon points="10,8 16,12 10,16" fill="white"/></svg></div>';
+  if(f.indexOf('carrusel')!==-1)return '<div class="format-icon"><svg viewBox="0 0 26 22" width="20" height="18"><rect x="0" y="4" width="16" height="16" rx="2" fill="rgba(0,0,0,0.4)" stroke="white" stroke-width="1.2"/><rect x="8" y="0" width="16" height="16" rx="2" fill="rgba(0,0,0,0.65)" stroke="white" stroke-width="1.2"/></svg></div>';
+  return '';
 }
 
 function switchTab(el){
@@ -199,146 +107,234 @@ function switchTab(el){
   el.classList.add('active');
 }
 
-function pillClass(s){
-  var sl = (s||'').toLowerCase();
-  if(sl.indexOf('publicado')!==-1||sl.indexOf('published')!==-1) return 'pill-publicado';
-  if(sl.indexOf('programado')!==-1||sl.indexOf('scheduled')!==-1) return 'pill-programado';
-  return 'pill-produccion';
-}
-
-function pillText(s){
-  var sl = (s||'').toLowerCase();
-  if(sl.indexOf('publicado')!==-1||sl.indexOf('published')!==-1) return '🚀 Publicado';
-  if(sl.indexOf('programado')!==-1||sl.indexOf('scheduled')!==-1) return '⏰ Programado';
-  return '🎬 En Producción';
-}
-
-function formatIcon(formato){
-  var f = (formato||'').toLowerCase();
-  if(f.indexOf('reel')!==-1) return '<div class="format-icon"><svg viewBox="0 0 24 24" width="18" height="18"><rect x="1" y="1" width="22" height="22" rx="6" fill="rgba(0,0,0,0.55)"/><polygon points="10,8 16,12 10,16" fill="white"/></svg></div>';
-  if(f.indexOf('carrusel')!==-1) return '<div class="format-icon"><svg viewBox="0 0 26 22" width="20" height="18"><rect x="0" y="4" width="16" height="16" rx="2" fill="rgba(0,0,0,0.4)" stroke="white" stroke-width="1.2"/><rect x="8" y="0" width="16" height="16" rx="2" fill="rgba(0,0,0,0.65)" stroke="white" stroke-width="1.2"/></svg></div>';
-  return '';
-}
-
-function buildGrid(pages) {
-  if (!pages || !pages.length) return '<div style="grid-column:1/-1;text-align:center;padding:2rem;font-size:13px;color:#888">No hay entradas para esta red aún.</div>';
-  var html = '';
-  for (var i = 0; i < 9; i++) {
-    var page = pages[i];
-    if (!page) { html += '<div class="ig-cell ig-cell-empty"><svg viewBox="0 0 24 24" style="width:24px;height:24px;stroke:#ddd;fill:none;stroke-width:1.5"><rect x="3" y="3" width="18" height="18" rx="2"/></svg></div>'; continue; }
-    var imgUrl = page._directImg || null;
-    var status = page._status || '';
-    var formato = page._formato || '';
-    var pill = pillClass(status);
-    var pillTxt = pillText(status);
-    var fmtIcon = formatIcon(formato);
-    if (imgUrl) {
-      html += '<div class="ig-cell"><img src="' + imgUrl + '" loading="lazy"/>' + fmtIcon + '<div class="status-pill ' + pill + '">' + pillTxt + '</div></div>';
-    } else {
-      html += '<div class="ig-cell ig-cell-empty"><svg viewBox="0 0 24 24" style="width:24px;height:24px;stroke:#ccc;fill:none;stroke-width:1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21,15 16,10 5,21"/></svg>' + fmtIcon + '<div class="status-pill ' + pill + '" style="position:absolute;bottom:6px;left:6px;">' + pillTxt + '</div></div>';
+function buildGrid(pages){
+  if(!pages||!pages.length)return '<div style="grid-column:1/-1;text-align:center;padding:2rem;font-size:13px;color:#888">No hay entradas para esta red aún.</div>';
+  var html='';
+  for(var i=0;i<9;i++){
+    var page=pages[i];
+    if(!page){html+='<div class="ig-cell ig-cell-empty"><svg viewBox="0 0 24 24" style="width:24px;height:24px;stroke:#ddd;fill:none;stroke-width:1.5"><rect x="3" y="3" width="18" height="18" rx="2"/></svg></div>';continue;}
+    var imgUrl=page._directImg||null;
+    var status=page._status||'';
+    var formato=page._formato||'';
+    var pill=pillClass(status);
+    var pillTxt=pillText(status);
+    var fmtIcon=formatIcon(formato);
+    if(imgUrl){
+      html+='<div class="ig-cell"><img src="'+imgUrl+'" loading="lazy"/>'+fmtIcon+'<div class="status-pill '+pill+'">'+pillTxt+'</div></div>';
+    }else{
+      html+='<div class="ig-cell ig-cell-empty"><svg viewBox="0 0 24 24" style="width:24px;height:24px;stroke:#ccc;fill:none;stroke-width:1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21,15 16,10 5,21"/></svg>'+fmtIcon+'<div class="status-pill '+pill+'" style="position:absolute;bottom:6px;left:6px;">'+pillTxt+'</div></div>';
     }
   }
   return html;
 }
 
-function loadGrid(cfg, containerId) {
-  if (!cfg || !cfg.token || !cfg.dbid) return;
+function renderWidget(containerId,cfg,pages){
+  var avatarLetter=cfg.username?cfg.username.replace('@','').charAt(0).toUpperCase():'@';
+  var username=cfg.username||'@tu_usuario';
+  var bio=cfg.bio||'Tu bio aquí ✨';
+  var count=pages?pages.length:'—';
+  document.getElementById(containerId).innerHTML=
+    '<div class="ig-card">'+
+    '<div class="ig-header">'+
+    '<div class="ig-avatar"><div class="ig-avatar-inner"><span>'+avatarLetter+'</span></div></div>'+
+    '<div style="flex:1">'+
+    '<div class="ig-stats">'+
+    '<div class="ig-stat"><strong>'+count+'</strong><span>posts</span></div>'+
+    '<div class="ig-stat"><strong>—</strong><span>seguidores</span></div>'+
+    '<div class="ig-stat"><strong>—</strong><span>seguidos</span></div>'+
+    '</div>'+
+    '<div class="ig-info">'+
+    '<div class="ig-username">'+username+'</div>'+
+    '<div class="ig-bio">'+bio+'</div>'+
+    '</div></div></div>'+
+    '<div class="ig-toolbar">'+
+    '<span class="ig-timer" id="countdown-text">Auto-refresh en 5:00</span>'+
+    '<button class="ig-refresh-btn" id="btn-refresh">'+
+    '<svg viewBox="0 0 24 24"><path d="M23 4v6h-6"/><path d="M1 20v-6h6"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>'+
+    'Actualizar</button>'+
+    '</div>'+
+    '<div class="ig-tabs">'+
+    '<div class="ig-tab active" id="tab1"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg></div>'+
+    '<div class="ig-tab" id="tab2"><svg viewBox="0 0 24 24"><rect x="2" y="2" width="20" height="20" rx="5" fill="none" stroke-width="1.5"/><polygon points="10,8 16,12 10,16" fill="currentColor" stroke="none"/></svg></div>'+
+    '<div class="ig-tab" id="tab3"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M17 2l4 4-4 4"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><path d="M7 22l-4-4 4-4"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg></div>'+
+    '<div class="ig-tab" id="tab4"><svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></div>'+
+    '</div>'+
+    '<div class="ig-grid" id="grid-cells">'+buildGrid(pages)+'</div>'+
+    '<div class="legend">'+
+    '<div class="legend-item"><div class="legend-dot" style="background:#22c55e"></div>🚀 Publicado</div>'+
+    '<div class="legend-item"><div class="legend-dot" style="background:#f59e0b"></div>⏰ Programado</div>'+
+    '<div class="legend-item"><div class="legend-dot" style="background:#6366f1"></div>🎬 En Producción</div>'+
+    '</div></div>';
 
-  if (document.getElementById('grid-cells')) {
-    document.getElementById('grid-cells').innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:2rem;font-size:13px;color:#888">Cargando...</div>';
+  document.getElementById('tab1').addEventListener('click',function(){switchTab(this)});
+  document.getElementById('tab2').addEventListener('click',function(){switchTab(this)});
+  document.getElementById('tab3').addEventListener('click',function(){switchTab(this)});
+  document.getElementById('tab4').addEventListener('click',function(){switchTab(this)});
+  document.getElementById('btn-refresh').addEventListener('click',function(){
+    recargarGrid(currentConfig,'widget-area');
+    resetAutoRefresh(currentConfig,'widget-area');
+  });
+}
+
+function recargarGrid(cfg,containerId){
+  var gridEl=document.getElementById('grid-cells');
+  if(gridEl)gridEl.innerHTML='<div style="grid-column:1/-1;text-align:center;padding:2rem;font-size:13px;color:#888">Cargando...</div>';
+  fetch('/api/notion',{
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({token:cfg.token,dbid:cfg.dbid,sortby:cfg.sortby,red:cfg.red})
+  })
+  .then(function(res){return res.json().then(function(d){return{ok:res.ok,data:d}});})
+  .then(function(result){
+    var pages=result.ok?result.data.results:[];
+    var gridEl2=document.getElementById('grid-cells');
+    if(gridEl2){
+      gridEl2.innerHTML=buildGrid(pages);
+      var countEl=document.querySelector('.ig-stat strong');
+      if(countEl&&pages&&pages.length)countEl.textContent=pages.length;
+    }
+  })
+  .catch(function(){
+    var gridEl3=document.getElementById('grid-cells');
+    if(gridEl3)gridEl3.innerHTML='<div style="grid-column:1/-1;text-align:center;padding:1rem;font-size:12px;color:#c0392b">Error de conexión.</div>';
+  });
+}
+
+function startCountdown(){
+  if(countdownTimer)clearInterval(countdownTimer);
+  nextRefresh=Date.now()+REFRESH_MS;
+  countdownTimer=setInterval(function(){
+    var rem=nextRefresh-Date.now();
+    if(rem<0)rem=0;
+    var m=Math.floor(rem/60000);
+    var s=Math.floor((rem%60000)/1000);
+    var el=document.getElementById('countdown-text');
+    if(el)el.textContent='Auto-refresh en '+m+':'+(s<10?'0':'')+s;
+  },1000);
+}
+
+function startAutoRefresh(cfg,containerId){
+  if(refreshTimer)clearTimeout(refreshTimer);
+  startCountdown();
+  refreshTimer=setTimeout(function(){
+    recargarGrid(cfg,containerId);
+    startAutoRefresh(cfg,containerId);
+  },REFRESH_MS);
+}
+
+function resetAutoRefresh(cfg,containerId){
+  startAutoRefresh(cfg,containerId);
+}
+
+function renderSetup(){
+  document.getElementById('wrap').innerHTML=
+    '<div class="setup">'+
+    '<h2>⚙️ Configuración</h2>'+
+    '<div class="field"><label>Token de integración</label><input id="p-token" type="password" placeholder="secret_xxxxxxxxxxxxxxxx"/></div>'+
+    '<div class="field"><label>Database ID</label><input id="p-dbid" type="text" placeholder="ID de tu base de datos"/></div>'+
+    '<div class="field"><label>Usuario</label><input id="p-username" type="text" placeholder="@tu_usuario"/></div>'+
+    '<div class="field"><label>Bio</label><input id="p-bio" type="text" placeholder="Social Media Manager · UGC Creator ✨"/></div>'+
+    '<div class="field"><label>Red social</label><select id="p-red">'+
+    '<option value="📱 Instagram">📱 Instagram</option>'+
+    '<option value="🎬 TikTok">🎬 TikTok</option>'+
+    '<option value="🔴 YouTube">🔴 YouTube</option>'+
+    '<option value="👥 LinkedIn">👥 LinkedIn</option>'+
+    '<option value="🔵 Facebook">🔵 Facebook</option>'+
+    '</select></div>'+
+    '<div class="field"><label>Ordenar por</label><select id="p-sortby">'+
+    '<option value="desc">Más reciente primero</option>'+
+    '<option value="asc">Más antiguo primero</option>'+
+    '</select></div>'+
+    '<button class="btn-primary" id="btn-preview">↻ Ver preview</button>'+
+    '<button class="btn-secondary" id="btn-genurl">🔗 Generar URL para Notion</button>'+
+    '<div id="url-output"></div>'+
+    '<div id="error-box"></div>'+
+    '</div>'+
+    '<div id="widget-area"></div>'+
+    '<div class="powered">Widget by <span>evelynaguilar.com</span></div>';
+
+  document.getElementById('btn-preview').addEventListener('click',function(){
+    var cfg=getFormConfig();
+    if(!cfg)return;
+    currentConfig=cfg;
+    fetch('/api/notion',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({token:cfg.token,dbid:cfg.dbid,sortby:cfg.sortby,red:cfg.red})
+    })
+    .then(function(res){return res.json().then(function(d){return{ok:res.ok,data:d}});})
+    .then(function(result){
+      var pages=result.ok?result.data.results:[];
+      renderWidget('widget-area',cfg,pages);
+      startAutoRefresh(cfg,'widget-area');
+    })
+    .catch(function(){
+      renderWidget('widget-area',cfg,[]);
+    });
+  });
+
+  document.getElementById('btn-genurl').addEventListener('click',function(){
+    var cfg=getFormConfig();
+    if(!cfg)return;
+    var url=window.location.origin+window.location.pathname+
+      '?token='+encodeURIComponent(cfg.token)+
+      '&dbid='+encodeURIComponent(cfg.dbid)+
+      '&username='+encodeURIComponent(cfg.username)+
+      '&bio='+encodeURIComponent(cfg.bio)+
+      '&red='+encodeURIComponent(cfg.red)+
+      '&sortby='+encodeURIComponent(cfg.sortby);
+    document.getElementById('url-output').innerHTML='<div class="success">✅ Copia esta URL y pégala en Notion con /embed:<br><br>'+url+'</div>';
+  });
+}
+
+function getFormConfig(){
+  var token=document.getElementById('p-token').value.trim();
+  var dbid=document.getElementById('p-dbid').value.trim().replace(/-/g,'');
+  if(!token||!dbid){
+    document.getElementById('error-box').innerHTML='<div class="error">Ingresa el token y el database ID.</div>';
+    return null;
   }
-
-  fetch('/api/notion', {
-    method: 'POST',
-    headers: {'Content-Type': 'application/json'},
-    body: JSON.stringify({token: cfg.token, dbid: cfg.dbid, sortby: cfg.sortby, red: cfg.red})
-  })
-  .then(function(res){ return res.json().then(function(data){ return {ok: res.ok, data: data}; }); })
-  .then(function(result) {
-    if (!result.ok) {
-      if (document.getElementById('grid-cells')) {
-        document.getElementById('grid-cells').innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:1rem;font-size:12px;color:#c0392b">' + (result.data.message || 'Error al conectar.') + '</div>';
-      }
-      return;
-    }
-    var pages = result.data.results;
-    if (!document.getElementById(containerId)) return;
-
-    if (document.getElementById('grid-cells')) {
-      document.getElementById('grid-cells').innerHTML = buildGrid(pages);
-      if (pages && pages.length > 0) {
-        var countEl = document.querySelector('.ig-stat strong');
-        if (countEl) countEl.textContent = pages.length;
-      }
-    } else {
-      renderWidget(containerId, cfg, pages);
-    }
-  })
-  .catch(function() {
-    if (document.getElementById('grid-cells')) {
-      document.getElementById('grid-cells').innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:1rem;font-size:12px;color:#c0392b">Error de conexión.</div>';
-    }
-  });
-}
-
-function startCountdown(containerId, cfg) {
-  if (countdownTimer) clearInterval(countdownTimer);
-  nextRefresh = Date.now() + REFRESH_MS;
-  countdownTimer = setInterval(function() {
-    var remaining = nextRefresh - Date.now();
-    if (remaining <= 0) remaining = 0;
-    var mins = Math.floor(remaining / 60000);
-    var secs = Math.floor((remaining % 60000) / 1000);
-    var el = document.getElementById('countdown-text');
-    if (el) el.textContent = 'Auto-refresh en ' + mins + ':' + (secs < 10 ? '0' : '') + secs;
-  }, 1000);
-}
-
-function startAutoRefresh(cfg, containerId) {
-  if (refreshTimer) clearTimeout(refreshTimer);
-  containerId = containerId || 'widget-area';
-  startCountdown(containerId, cfg);
-  refreshTimer = setTimeout(function() {
-    loadGrid(cfg, containerId);
-    startAutoRefresh(cfg, containerId);
-  }, REFRESH_MS);
-}
-
-function resetAutoRefresh(cfg, containerId) {
-  startAutoRefresh(cfg, containerId);
-}
-
-if (embedMode) {
-  var cfg = {
-    token: params.token,
-    dbid: params.dbid.replace(/-/g,''),
-    username: params.username || '',
-    bio: params.bio || '',
-    red: params.red || '📱 Instagram',
-    sortby: params.sortby || 'desc'
+  document.getElementById('error-box').innerHTML='';
+  return{
+    token:token,
+    dbid:dbid,
+    username:document.getElementById('p-username').value.trim(),
+    bio:document.getElementById('p-bio').value.trim(),
+    red:document.getElementById('p-red').value,
+    sortby:document.getElementById('p-sortby').value
   };
-  currentConfig = cfg;
-  document.getElementById('wrap').innerHTML = '<div id="widget-area"></div><div class="powered">Widget by <span>evelynaguilar.com</span></div>';
+}
 
-  fetch('/api/notion', {
-    method: 'POST',
-    headers: {'Content-Type': 'application/json'},
-    body: JSON.stringify({token: cfg.token, dbid: cfg.dbid, sortby: cfg.sortby, red: cfg.red})
+if(embedMode){
+  var cfg={
+    token:params.token,
+    dbid:params.dbid.replace(/-/g,''),
+    username:params.username||'',
+    bio:params.bio||'',
+    red:params.red||'📱 Instagram',
+    sortby:params.sortby||'desc'
+  };
+  currentConfig=cfg;
+  document.getElementById('wrap').innerHTML='<div id="widget-area"></div><div class="powered">Widget by <span>evelynaguilar.com</span></div>';
+  fetch('/api/notion',{
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({token:cfg.token,dbid:cfg.dbid,sortby:cfg.sortby,red:cfg.red})
   })
-  .then(function(res){ return res.json().then(function(data){ return {ok: res.ok, data: data}; }); })
-  .then(function(result) {
-    var pages = result.ok ? result.data.results : [];
-    renderWidget('widget-area', cfg, pages);
-    startAutoRefresh(cfg, 'widget-area');
+  .then(function(res){return res.json().then(function(d){return{ok:res.ok,data:d}});})
+  .then(function(result){
+    var pages=result.ok?result.data.results:[];
+    renderWidget('widget-area',cfg,pages);
+    startAutoRefresh(cfg,'widget-area');
   })
-  .catch(function() {
-    renderWidget('widget-area', cfg, []);
-    startAutoRefresh(cfg, 'widget-area');
+  .catch(function(){
+    renderWidget('widget-area',cfg,[]);
+    startAutoRefresh(cfg,'widget-area');
   });
-} else {
+}else{
   renderSetup();
 }
 </script>
-<!-- build v12 -->
+<!-- build v13 -->
 </body>
 </html>
