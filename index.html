@@ -61,11 +61,11 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 <body>
 <div class="wrap" id="wrap"></div>
 <script>
-var REFRESH_MS = 5*60*1000;
-var refreshTimer = null;
-var countdownTimer = null;
-var nextRefresh = null;
-var currentConfig = {};
+var REFRESH_MS=5*60*1000;
+var refreshTimer=null;
+var countdownTimer=null;
+var nextRefresh=null;
+var currentConfig={};
 
 function getParams(){
   var p={};
@@ -81,17 +81,15 @@ var embedMode=!!(params.token&&params.dbid);
 
 function pillClass(s){
   if(!s)return 'pill-produccion';
-  var sl=s.replace(/[^\x00-\x7F]/g,'').toLowerCase().trim();
-  if(sl.indexOf('publicado')!==-1||sl.indexOf('published')!==-1)return 'pill-publicado';
-  if(sl.indexOf('programado')!==-1||sl.indexOf('scheduled')!==-1)return 'pill-programado';
+  if(s.indexOf('Publicado')!==-1||s.indexOf('Published')!==-1)return 'pill-publicado';
+  if(s.indexOf('Programado')!==-1||s.indexOf('Scheduled')!==-1)return 'pill-programado';
   return 'pill-produccion';
 }
 
 function pillText(s){
   if(!s)return '🎬 En Producción';
-  var sl=s.replace(/[^\x00-\x7F]/g,'').toLowerCase().trim();
-  if(sl.indexOf('publicado')!==-1||sl.indexOf('published')!==-1)return '🚀 Publicado';
-  if(sl.indexOf('programado')!==-1||sl.indexOf('scheduled')!==-1)return '⏰ Programado';
+  if(s.indexOf('Publicado')!==-1||s.indexOf('Published')!==-1)return '🚀 Publicado';
+  if(s.indexOf('Programado')!==-1||s.indexOf('Scheduled')!==-1)return '⏰ Programado';
   return '🎬 En Producción';
 }
 
@@ -226,10 +224,28 @@ function resetAutoRefresh(cfg,containerId){
   startAutoRefresh(cfg,containerId);
 }
 
+function getFormConfig(){
+  var token=document.getElementById('p-token').value.trim();
+  var dbid=document.getElementById('p-dbid').value.trim().replace(/-/g,'');
+  if(!token||!dbid){
+    document.getElementById('error-box').innerHTML='<div class="error">Ingresa el token y el database ID.</div>';
+    return null;
+  }
+  document.getElementById('error-box').innerHTML='';
+  return{
+    token:token,
+    dbid:dbid,
+    username:document.getElementById('p-username').value.trim(),
+    bio:document.getElementById('p-bio').value.trim(),
+    red:document.getElementById('p-red').value,
+    sortby:document.getElementById('p-sortby').value
+  };
+}
+
 function renderSetup(){
   document.getElementById('wrap').innerHTML=
     '<div class="setup">'+
-    '<h2>⚙️ Configuración</h2>'+
+    '<h2>Configuración</h2>'+
     '<div class="field"><label>Token de integración</label><input id="p-token" type="password" placeholder="secret_xxxxxxxxxxxxxxxx"/></div>'+
     '<div class="field"><label>Database ID</label><input id="p-dbid" type="text" placeholder="ID de tu base de datos"/></div>'+
     '<div class="field"><label>Usuario</label><input id="p-username" type="text" placeholder="@tu_usuario"/></div>'+
@@ -287,24 +303,6 @@ function renderSetup(){
   });
 }
 
-function getFormConfig(){
-  var token=document.getElementById('p-token').value.trim();
-  var dbid=document.getElementById('p-dbid').value.trim().replace(/-/g,'');
-  if(!token||!dbid){
-    document.getElementById('error-box').innerHTML='<div class="error">Ingresa el token y el database ID.</div>';
-    return null;
-  }
-  document.getElementById('error-box').innerHTML='';
-  return{
-    token:token,
-    dbid:dbid,
-    username:document.getElementById('p-username').value.trim(),
-    bio:document.getElementById('p-bio').value.trim(),
-    red:document.getElementById('p-red').value,
-    sortby:document.getElementById('p-sortby').value
-  };
-}
-
 if(embedMode){
   var cfg={
     token:params.token,
@@ -335,6 +333,6 @@ if(embedMode){
   renderSetup();
 }
 </script>
-<!-- build v13 -->
+<!-- build v14 -->
 </body>
 </html>
