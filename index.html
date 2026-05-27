@@ -33,15 +33,28 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .ig-tab.active{border-bottom:2px solid #111}
 .ig-tab svg{width:22px;height:22px;stroke:#999;fill:none;stroke-width:1.5}
 .ig-tab.active svg{stroke:#111}
+
+/* Shared section */
+.ig-shared-bar{display:flex;align-items:center;gap:6px;padding:8px 12px;border-bottom:1px solid #efefef;background:#fafafa}
+.ig-shared-icon{display:flex;align-items:center;gap:4px;font-size:11px;color:#888}
+.ig-shared-icon svg{width:14px;height:14px;stroke:#888;fill:none;stroke-width:2}
+
 .ig-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:2px}
-.ig-cell{position:relative;aspect-ratio:9/16;background:#efefef;overflow:hidden;cursor:pointer}
+.ig-cell{position:relative;aspect-ratio:3/4;background:#efefef;overflow:hidden;cursor:pointer}
 .ig-cell img{width:100%;height:100%;object-fit:cover;display:block}
 .ig-cell-empty{display:flex;align-items:center;justify-content:center}
 .ig-cell-empty svg{width:24px;height:24px;stroke:#ccc;fill:none;stroke-width:1.5}
-.dot{position:absolute;top:8px;right:8px;width:12px;height:12px;border-radius:50%;border:2px solid #fff;box-shadow:0 1px 3px rgba(0,0,0,.3)}
-.dot-publicado{background:#22c55e}
-.dot-programado{background:#f59e0b}
-.dot-proceso{background:#94a3b8}
+
+/* Format icon — top right */
+.format-icon{position:absolute;top:6px;right:6px;filter:drop-shadow(0 1px 2px rgba(0,0,0,.5))}
+.format-icon svg{width:16px;height:16px}
+
+/* Status pill — bottom left */
+.status-pill{position:absolute;bottom:6px;left:6px;padding:2px 7px;border-radius:20px;font-size:9px;font-weight:600;letter-spacing:.03em;backdrop-filter:blur(4px)}
+.pill-publicado{background:rgba(34,197,94,.85);color:#fff}
+.pill-programado{background:rgba(245,158,11,.85);color:#fff}
+.pill-proceso{background:rgba(148,163,184,.85);color:#fff}
+
 .legend{display:flex;gap:14px;justify-content:center;padding:10px;border-top:1px solid #efefef}
 .legend-item{display:flex;align-items:center;gap:5px;font-size:11px;color:#888}
 .legend-dot{width:9px;height:9px;border-radius:50%}
@@ -89,6 +102,14 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 <div class="ig-tab active" id="tab1"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg></div>
 <div class="ig-tab" id="tab2"><svg viewBox="0 0 24 24"><polygon points="5,3 19,12 5,21"/></svg></div>
 <div class="ig-tab" id="tab3"><svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></div>
+</div>
+
+<!-- Shared bar -->
+<div class="ig-shared-bar">
+<div class="ig-shared-icon">
+<svg viewBox="0 0 24 24"><path d="M7 16V4m0 0L3 8m4-4l4 4"/><path d="M17 8v12m0 0l4-4m-4 4l-4-4"/></svg>
+<span>Compartidos</span>
+</div>
 </div>
 
 <div class="ig-grid" id="grid">
@@ -142,12 +163,39 @@ if(s.select&&s.select.name)return s.select.name;
 return '';
 }
 
-function dotClass(s){
-if(!s)return 'dot-proceso';
+function getFormato(properties){
+if(!properties||!properties.Formato)return '';
+var f=properties.Formato;
+if(f.multi_select&&f.multi_select.length>0)return f.multi_select[0].name;
+if(f.select&&f.select.name)return f.select.name;
+return '';
+}
+
+function pillClass(s){
+if(!s)return 'pill-proceso';
 s=s.toLowerCase();
-if(s==='publicado')return 'dot-publicado';
-if(s==='programado')return 'dot-programado';
-return 'dot-proceso';
+if(s==='publicado')return 'pill-publicado';
+if(s==='programado')return 'pill-programado';
+return 'pill-proceso';
+}
+
+function pillText(s){
+if(!s)return 'En Proceso';
+var sl=s.toLowerCase();
+if(sl==='publicado')return '✓ Publicado';
+if(sl==='programado')return '⏰ Programado';
+return '✏️ En Proceso';
+}
+
+function formatIcon(formato){
+var f=(formato||'').toLowerCase();
+if(f==='reel'){
+return '<div class="format-icon"><svg viewBox="0 0 24 24" width="18" height="18"><rect x="2" y="2" width="20" height="20" rx="5" fill="rgba(0,0,0,0.55)"/><polygon points="10,8 16,12 10,16" fill="white"/></svg></div>';
+}
+if(f==='carrusel'){
+return '<div class="format-icon"><svg viewBox="0 0 24 24" width="18" height="18"><rect x="1" y="5" width="15" height="15" rx="2" fill="rgba(0,0,0,0.4)" stroke="white" stroke-width="1"/><rect x="8" y="2" width="15" height="15" rx="2" fill="rgba(0,0,0,0.55)" stroke="white" stroke-width="1"/></svg></div>';
+}
+return '';
 }
 
 function emptyGrid(){
@@ -166,7 +214,6 @@ var errBox=document.getElementById('error-box');
 var grid=document.getElementById('grid');
 
 errBox.innerHTML='';
-
 if(username)document.getElementById('display-username').textContent=username;
 if(bio)document.getElementById('display-bio').textContent=bio;
 
@@ -201,11 +248,22 @@ var page=pages[i];
 if(!page){html+='<div class="ig-cell ig-cell-empty"><svg viewBox="0 0 24 24" style="width:24px;height:24px;stroke:#ddd;fill:none;stroke-width:1.5"><rect x="3" y="3" width="18" height="18" rx="2"/></svg></div>';continue;}
 var imgUrl=page._directImg||null;
 var status=getStatus(page.properties);
-var dot=dotClass(status);
+var formato=getFormato(page.properties);
+var pill=pillClass(status);
+var pillTxt=pillText(status);
+var fmtIcon=formatIcon(formato);
 if(imgUrl){
-html+='<div class="ig-cell"><img src="'+imgUrl+'" loading="lazy"/><div class="dot '+dot+'"></div></div>';
+html+='<div class="ig-cell">';
+html+='<img src="'+imgUrl+'" loading="lazy"/>';
+html+=fmtIcon;
+html+='<div class="status-pill '+pill+'">'+pillTxt+'</div>';
+html+='</div>';
 }else{
-html+='<div class="ig-cell ig-cell-empty"><svg viewBox="0 0 24 24" style="width:24px;height:24px;stroke:#ccc;fill:none;stroke-width:1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21,15 16,10 5,21"/></svg><div class="dot '+dot+'" style="position:absolute;top:8px;right:8px;"></div></div>';
+html+='<div class="ig-cell ig-cell-empty">';
+html+='<svg viewBox="0 0 24 24" style="width:24px;height:24px;stroke:#ccc;fill:none;stroke-width:1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21,15 16,10 5,21"/></svg>';
+html+=fmtIcon;
+html+='<div class="status-pill '+pill+'" style="position:absolute;bottom:6px;left:6px;">'+pillTxt+'</div>';
+html+='</div>';
 }
 }
 grid.innerHTML=html;
@@ -216,6 +274,6 @@ grid.innerHTML=emptyGrid();
 });
 }
 </script>
-<!-- build v7 -->
+<!-- build v8 -->
 </body>
 </html>
