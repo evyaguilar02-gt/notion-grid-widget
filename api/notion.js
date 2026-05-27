@@ -11,7 +11,7 @@ module.exports = async function handler(req, res) {
   try {
     var token = req.body.token;
     var dbid = req.body.dbid;
-    var red = req.body.red || 'Instagram';
+    var red = req.body.red || '📱 Instagram';
 
     if (!token || !dbid) return res.status(400).json({ message: 'Token y database ID son requeridos.' });
 
