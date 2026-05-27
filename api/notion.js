@@ -1,4 +1,4 @@
-[12:34, 27/5/2026] Evelyn Aguilar: const https = require('https');
+const https = require('https');
 
 module.exports = async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
