@@ -20,7 +20,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .error{font-size:12px;color:#c0392b;background:#fdf0ee;border-radius:8px;padding:8px 10px;margin-top:8px}
 .success{font-size:12px;color:#1a6b3c;background:#e8f5e9;border-radius:8px;padding:8px 10px;margin-top:8px;word-break:break-all}
 .ig-card{background:#fff;border:1px solid #dbdbdb;border-radius:12px;overflow:hidden}
-.ig-header{padding:16px;display:flex;align-items:center;gap:16px;border-bottom:1px solid #efefef}
+.ig-header{padding:16px;display:flex;align-items:center;gap:16px;border-bottom:1px solid #efefef;position:relative}
 .ig-avatar{width:64px;height:64px;border-radius:50%;background:linear-gradient(45deg,#f09433,#e6683c,#dc2743,#cc2366,#bc1888);padding:2px;flex-shrink:0}
 .ig-avatar-inner{width:100%;height:100%;border-radius:50%;background:#fff;display:flex;align-items:center;justify-content:center;overflow:hidden}
 .ig-avatar-inner span{font-size:22px;font-weight:700;color:#888}
@@ -28,9 +28,15 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .ig-stat{text-align:center}
 .ig-stat strong{display:block;font-size:14px;font-weight:700;color:#111}
 .ig-stat span{font-size:11px;color:#666}
-.ig-info{margin-top:4px}
+.ig-info{margin-top:4px;flex:1}
 .ig-username{font-size:14px;font-weight:700;color:#111}
 .ig-bio{font-size:12px;color:#333;margin-top:2px;line-height:1.4}
+.edit-btn{position:absolute;top:12px;right:12px;background:none;border:none;cursor:pointer;font-size:14px;opacity:.4;padding:4px}
+.edit-btn:hover{opacity:1}
+.edit-panel{padding:12px 16px;border-bottom:1px solid #efefef;background:#fafafa;display:none}
+.edit-panel.open{display:block}
+.edit-panel input{width:100%;font-size:13px;padding:7px 10px;border-radius:8px;border:1px solid #ddd;background:#fff;color:#111;margin-bottom:8px}
+.edit-panel button{width:100%;padding:8px;border-radius:8px;border:none;background:#111;color:#fff;font-size:12px;font-weight:600;cursor:pointer}
 .ig-toolbar{display:flex;align-items:center;justify-content:space-between;padding:6px 12px;border-bottom:1px solid #efefef;background:#fafafa}
 .ig-timer{font-size:10px;color:#bbb}
 .ig-refresh-btn{background:none;border:none;cursor:pointer;font-size:11px;color:#888;display:flex;align-items:center;gap:4px;padding:4px 8px;border-radius:6px}
@@ -50,7 +56,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .status-pill{position:absolute;bottom:6px;left:6px;padding:2px 7px;border-radius:20px;font-size:9px;font-weight:600;backdrop-filter:blur(4px);white-space:nowrap}
 .pill-publicado{background:rgba(34,197,94,.85);color:#fff}
 .pill-programado{background:rgba(245,158,11,.85);color:#fff}
-.pill-produccion{background:rgba(99,102,241,.85);color:#fff}
+.pill-produccion{background:rgba(180,180,180,.85);color:#fff}
 .legend{display:flex;gap:10px;justify-content:center;padding:10px;border-top:1px solid #efefef;flex-wrap:wrap}
 .legend-item{display:flex;align-items:center;gap:5px;font-size:10px;color:#888}
 .legend-dot{width:8px;height:8px;border-radius:50%}
@@ -129,12 +135,12 @@ function buildGrid(pages){
 function renderWidget(containerId,cfg,pages){
   var avatarLetter=cfg.username?cfg.username.replace('@','').charAt(0).toUpperCase():'@';
   var username=cfg.username||'@tu_usuario';
-  var bio=cfg.bio||'Tu bio aquí ✨';
+  var bio=cfg.bio||'Social Media Manager · UGC Creator · Nombre de tu marca';
   var count=pages?pages.length:'—';
   document.getElementById(containerId).innerHTML=
     '<div class="ig-card">'+
     '<div class="ig-header">'+
-    '<div class="ig-avatar"><div class="ig-avatar-inner"><span>'+avatarLetter+'</span></div></div>'+
+    '<div class="ig-avatar"><div class="ig-avatar-inner"><span id="avatar-letter">'+avatarLetter+'</span></div></div>'+
     '<div style="flex:1">'+
     '<div class="ig-stats">'+
     '<div class="ig-stat"><strong>'+count+'</strong><span>posts</span></div>'+
@@ -142,9 +148,16 @@ function renderWidget(containerId,cfg,pages){
     '<div class="ig-stat"><strong>—</strong><span>seguidos</span></div>'+
     '</div>'+
     '<div class="ig-info">'+
-    '<div class="ig-username">'+username+'</div>'+
-    '<div class="ig-bio">'+bio+'</div>'+
-    '</div></div></div>'+
+    '<div class="ig-username" id="disp-user">'+username+'</div>'+
+    '<div class="ig-bio" id="disp-bio">'+bio+'</div>'+
+    '</div></div>'+
+    '<button class="edit-btn" id="edit-toggle" title="Editar perfil">✏️</button>'+
+    '</div>'+
+    '<div class="edit-panel" id="edit-panel">'+
+    '<input id="edit-username" type="text" placeholder="@tu_usuario · @agencia · @marca"/>'+
+    '<input id="edit-bio" type="text" placeholder="Social Media Manager · UGC Creator · Nombre de tu marca"/>'+
+    '<button id="edit-save">Guardar</button>'+
+    '</div>'+
     '<div class="ig-toolbar">'+
     '<span class="ig-timer" id="countdown-text">Auto-refresh en 5:00</span>'+
     '<button class="ig-refresh-btn" id="btn-refresh">'+
@@ -161,13 +174,33 @@ function renderWidget(containerId,cfg,pages){
     '<div class="legend">'+
     '<div class="legend-item"><div class="legend-dot" style="background:#22c55e"></div>🚀 Publicado</div>'+
     '<div class="legend-item"><div class="legend-dot" style="background:#f59e0b"></div>⏰ Programado</div>'+
-    '<div class="legend-item"><div class="legend-dot" style="background:#6366f1"></div>🎬 En Producción</div>'+
+    '<div class="legend-item"><div class="legend-dot" style="background:#b4b4b4"></div>🎬 En Producción</div>'+
     '</div></div>';
 
   document.getElementById('tab1').addEventListener('click',function(){switchTab(this)});
   document.getElementById('tab2').addEventListener('click',function(){switchTab(this)});
   document.getElementById('tab3').addEventListener('click',function(){switchTab(this)});
   document.getElementById('tab4').addEventListener('click',function(){switchTab(this)});
+
+  document.getElementById('edit-toggle').addEventListener('click',function(){
+    document.getElementById('edit-panel').classList.toggle('open');
+  });
+
+  document.getElementById('edit-save').addEventListener('click',function(){
+    var newUser=document.getElementById('edit-username').value.trim();
+    var newBio=document.getElementById('edit-bio').value.trim();
+    if(newUser){
+      document.getElementById('disp-user').textContent=newUser;
+      document.getElementById('avatar-letter').textContent=newUser.replace('@','').charAt(0).toUpperCase();
+      currentConfig.username=newUser;
+    }
+    if(newBio){
+      document.getElementById('disp-bio').textContent=newBio;
+      currentConfig.bio=newBio;
+    }
+    document.getElementById('edit-panel').classList.remove('open');
+  });
+
   document.getElementById('btn-refresh').addEventListener('click',function(){
     recargarGrid(currentConfig,'widget-area');
     resetAutoRefresh(currentConfig,'widget-area');
@@ -249,7 +282,7 @@ function renderSetup(){
     '<div class="field"><label>Token de integración</label><input id="p-token" type="password" placeholder="secret_xxxxxxxxxxxxxxxx"/></div>'+
     '<div class="field"><label>Database ID</label><input id="p-dbid" type="text" placeholder="ID de tu base de datos"/></div>'+
     '<div class="field"><label>Usuario</label><input id="p-username" type="text" placeholder="@tu_usuario"/></div>'+
-    '<div class="field"><label>Bio</label><input id="p-bio" type="text" placeholder="Social Media Manager · UGC Creator ✨"/></div>'+
+    '<div class="field"><label>Bio</label><input id="p-bio" type="text" placeholder="Social Media Manager · UGC Creator · Nombre de tu marca"/></div>'+
     '<div class="field"><label>Red social</label><select id="p-red">'+
     '<option value="📱 Instagram">📱 Instagram</option>'+
     '<option value="🎬 TikTok">🎬 TikTok</option>'+
@@ -284,9 +317,7 @@ function renderSetup(){
       renderWidget('widget-area',cfg,pages);
       startAutoRefresh(cfg,'widget-area');
     })
-    .catch(function(){
-      renderWidget('widget-area',cfg,[]);
-    });
+    .catch(function(){renderWidget('widget-area',cfg,[]);});
   });
 
   document.getElementById('btn-genurl').addEventListener('click',function(){
@@ -299,7 +330,7 @@ function renderSetup(){
       '&bio='+encodeURIComponent(cfg.bio)+
       '&red='+encodeURIComponent(cfg.red)+
       '&sortby='+encodeURIComponent(cfg.sortby);
-    document.getElementById('url-output').innerHTML='<div class="success">✅ Copia esta URL y pégala en Notion con /embed:<br><br>'+url+'</div>';
+    document.getElementById('url-output').innerHTML='<div class="success">Copia esta URL y pégala en Notion con /embed:<br><br>'+url+'</div>';
   });
 }
 
@@ -333,6 +364,6 @@ if(embedMode){
   renderSetup();
 }
 </script>
-<!-- build v14 -->
+<!-- build v16 -->
 </body>
 </html>
