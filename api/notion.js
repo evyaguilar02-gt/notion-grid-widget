@@ -16,22 +16,88 @@ module.exports = async function handler(req, res) {
     if (!token || !dbid) return res.status(400).json({ message: 'Token y database ID son requeridos.' });
 
     var formatosValidos = ['reel', 'post', 'carrusel'];
+    var statusValidos = ['publicado', 'en producci', 'programado'…
+[12:45, 27/5/2026] Evelyn Aguilar: const https = require('https');
+
+module.exports = async function handler(req, res) {
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+
+  if (req.method === 'OPTIONS') return res.status(200).end();
+  if (req.method !== 'POST') return res.status(405).json({ message: 'Method not allowed' });
+
+  try {
+    var token = req.body.token;
+    var dbid = req.body.dbid;
+    var red = req.body.red || 'Instagram';
+
+    if (!token || !dbid) return res.status(400).json({ message: 'Token y database ID son requeridos.' });
+
+    var formatosValidos = ['reel', 'post', 'carrusel'];
+    var statusValidos = ['publicado', 'producci', 'programado', '…
+[12:48, 27/5/2026] Evelyn Aguilar: const https = require('https');
+
+module.exports = async function handler(req, res) {
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+
+  if (req.method === 'OPTIONS') return res.status(200).end();
+  if (req.method !== 'POST') return res.status(405).json({ message: 'Method not allowed' });
+
+  try {
+    var token = req.body.token;
+    var dbid = req.body.dbid;
+    var red = req.body.red || 'Instagram';
+
+    if (!token || !dbid) return res.status(400).json({ message: 'Token y database ID son requeridos.' });
+
+    var formatosValidos = ['reel', 'post', 'carrusel'];
 
     function quitarEmojis(str) {
       if (!str) return '';
-      var result = '';
-      for (var i = 0; i < str.length; i++) {
-        var cp = str.codePointAt(i);
-        if (cp < 127462) {
-          result += str[i];
-        } else {
-          if (cp > 65535) i++;
+    …
+[12:59, 27/5/2026] Evelyn Aguilar: const https = require('https');
+
+module.exports = async function handler(req, res) {
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+
+  if (req.method === 'OPTIONS') return res.status(200).end();
+  if (req.method !== 'POST') return res.status(405).json({ message: 'Method not allowed' });
+
+  try {
+    var token = req.body.token;
+    var dbid = req.body.dbid;
+    var red = req.body.red || 'Instagram';
+
+    if (!token || !dbid) return res.status(400).json({ message: 'Token y database ID son requeridos.' });
+
+    var formatosValidos = ['reel', 'post', 'carrusel'];
+
+    function soloTexto(str) {
+      if (!str) return '';
+      var out = '';
+      var i = 0;
+      while (i < str.length) {
+        var code = str.charCodeAt(i);
+        if (code >= 0xD800 && code <= 0xDBFF) {
+          i += 2;
+          continue;
         }
+        if (code > 0x2000) {
+          i++;
+          continue;
+        }
+        out += str[i];
+        i++;
       }
-      return result.toLowerCase().trim();
+      return out.toLowerCase().trim();
     }
 
-    var redBuscada = quitarEmojis(red);
+    var redBuscada = soloTexto(red);
 
     var body = JSON.stringify({
       sorts: [{ property: 'Fecha', direction: 'descending' }],
@@ -70,45 +136,43 @@ module.exports = async function handler(req, res) {
       var props = page.properties;
       if (!props) return false;
 
-      // Debe tener Fecha
       var fechaProp = props.Fecha;
       if (!fechaProp || !fechaProp.date || !fechaProp.date.start) return false;
 
-      // Status debe existir
       var statusProp = props.Status;
       if (!statusProp) return false;
       var statusNombre = '';
       if (statusProp.status && statusProp.status.name) statusNombre = statusProp.status.name;
       else if (statusProp.select && statusProp.select.name) statusNombre = statusProp.select.name;
       if (!statusNombre) return false;
-      var statusLimpio = quitarEmojis(statusNombre);
-      var statusOk = statusLimpio.indexOf('publicado') !== -1 ||
-                     statusLimpio.indexOf('programado') !== -1 ||
-                     statusLimpio.indexOf('producci') !== -1 ||
-                     statusLimpio.indexOf('published') !== -1 ||
-                     statusLimpio.indexOf('scheduled') !== -1;
+      var statusTexto = soloTexto(statusNombre);
+      var statusOk = statusTexto.indexOf('publicado') !== -1 ||
+                     statusTexto.indexOf('programado') !== -1 ||
+                     statusTexto.indexOf('producci') !== -1 ||
+                     statusTexto.indexOf('published') !== -1 ||
+                     statusTexto.indexOf('scheduled') !== -1;
       if (!statusOk) return false;
 
-      // Red debe incluir la seleccionada
       var redProp = props.Red;
       if (!redProp) return false;
       var redesArray = [];
       if (redProp.multi_select && redProp.multi_select.length > 0) {
-        redesArray = redProp.multi_select.map(function(r){ return quitarEmojis(r.name); });
+        redesArray = redProp.multi_select.map(function(r){ return soloTexto(r.name); });
       } else if (redProp.select && redProp.select.name) {
-        redesArray = [quitarEmojis(redProp.select.name)];
+        redesArray = [soloTexto(redProp.select.name)];
       }
-      var tieneRed = redesArray.some(function(r){ return r.indexOf(redBuscada) !== -1 || redBuscada.indexOf(r) !== -1; });
+      var tieneRed = redesArray.some(function(r){
+        return r.indexOf(redBuscada) !== -1 || redBuscada.indexOf(r) !== -1;
+      });
       if (!tieneRed) return false;
 
-      // Formato válido
       var formatoProp = props.Formato;
       if (!formatoProp) return false;
       var formatosArray = [];
       if (formatoProp.multi_select && formatoProp.multi_select.length > 0) {
-        formatosArray = formatoProp.multi_select.map(function(f){ return quitarEmojis(f.name); });
+        formatosArray = formatoProp.multi_select.map(function(f){ return soloTexto(f.name); });
       } else if (formatoProp.select && formatoProp.select.name) {
-        formatosArray = [quitarEmojis(formatoProp.select.name)];
+        formatosArray = [soloTexto(formatoProp.select.name)];
       }
       var tieneFormato = formatosArray.some(function(f){
         return formatosValidos.some(function(v){ return f.indexOf(v) !== -1; });
@@ -140,8 +204,17 @@ module.exports = async function handler(req, res) {
         if (formatoProp.multi_select && formatoProp.multi_select.length > 0) formatoNombre = formatoProp.multi_select[0].name;
         else if (formatoProp.select && formatoProp.select.name) formatoNombre = formatoProp.select.name;
       }
+
+      var statusProp = page.properties && page.properties.Status;
+      var statusNombre = '';
+      if (statusProp) {
+        if (statusProp.status && statusProp.status.name) statusNombre = statusProp.status.name;
+        else if (statusProp.select && statusProp.select.name) statusNombre = statusProp.select.name;
+      }
+
       page._directImg = rawUrl || null;
-      page._formato = quitarEmojis(formatoNombre);
+      page._formato = soloTexto(formatoNombre);
+      page._status = statusNombre;
       return page;
     });
 
