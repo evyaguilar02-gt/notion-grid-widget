@@ -20,22 +20,22 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .error{font-size:12px;color:#c0392b;background:#fdf0ee;border-radius:8px;padding:8px 10px;margin-top:8px}
 .success{font-size:12px;color:#1a6b3c;background:#e8f5e9;border-radius:8px;padding:8px 10px;margin-top:8px;word-break:break-all}
 .ig-card{background:#fff;border:1px solid #dbdbdb;border-radius:12px;overflow:hidden}
-.ig-header{padding:16px;display:flex;align-items:center;gap:16px;border-bottom:1px solid #efefef;position:relative}
-.ig-avatar{width:64px;height:64px;border-radius:50%;background:linear-gradient(45deg,#f09433,#e6683c,#dc2743,#cc2366,#bc1888);padding:2px;flex-shrink:0}
-.ig-avatar-inner{width:100%;height:100%;border-radius:50%;background:#fff;display:flex;align-items:center;justify-content:center;overflow:hidden}
-.ig-avatar-inner span{font-size:22px;font-weight:700;color:#888}
-.ig-stats{display:flex;gap:16px}
+.ig-header{padding:16px;display:flex;align-items:center;gap:12px;border-bottom:1px solid #efefef;position:relative}
+.ig-avatar{width:56px;height:56px;border-radius:50%;background:linear-gradient(45deg,#f09433,#e6683c,#dc2743,#cc2366,#bc1888);padding:2px;flex-shrink:0}
+.ig-avatar-inner{width:100%;height:100%;border-radius:50%;background:#fff;display:flex;align-items:center;justify-content:center}
+.ig-avatar-inner span{font-size:20px;font-weight:700;color:#888}
+.ig-stats{display:flex;gap:12px}
 .ig-stat{text-align:center}
-.ig-stat strong{display:block;font-size:14px;font-weight:700;color:#111}
-.ig-stat span{font-size:11px;color:#666}
-.ig-info{margin-top:4px;flex:1}
-.ig-username{font-size:14px;font-weight:700;color:#111}
-.ig-bio{font-size:12px;color:#333;margin-top:2px;line-height:1.4}
-.edit-btn{position:absolute;top:12px;right:12px;background:none;border:none;cursor:pointer;font-size:14px;opacity:.4;padding:4px}
+.ig-stat strong{display:block;font-size:13px;font-weight:700;color:#111}
+.ig-stat span{font-size:10px;color:#666}
+.ig-info{margin-top:3px;flex:1}
+.ig-username{font-size:13px;font-weight:700;color:#111}
+.ig-bio{font-size:11px;color:#555;margin-top:2px;line-height:1.4}
+.edit-btn{background:none;border:none;cursor:pointer;font-size:13px;opacity:.6;padding:4px;flex-shrink:0}
 .edit-btn:hover{opacity:1}
 .edit-panel{padding:12px 16px;border-bottom:1px solid #efefef;background:#fafafa;display:none}
 .edit-panel.open{display:block}
-.edit-panel input{width:100%;font-size:13px;padding:7px 10px;border-radius:8px;border:1px solid #ddd;background:#fff;color:#111;margin-bottom:8px}
+.edit-panel input{width:100%;font-size:12px;padding:7px 10px;border-radius:8px;border:1px solid #ddd;background:#fff;color:#111;margin-bottom:8px}
 .edit-panel button{width:100%;padding:8px;border-radius:8px;border:none;background:#111;color:#fff;font-size:12px;font-weight:600;cursor:pointer}
 .ig-toolbar{display:flex;align-items:center;justify-content:space-between;padding:6px 12px;border-bottom:1px solid #efefef;background:#fafafa}
 .ig-timer{font-size:10px;color:#bbb}
@@ -45,22 +45,22 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .ig-tabs{display:flex;border-bottom:1px solid #efefef}
 .ig-tab{flex:1;display:flex;align-items:center;justify-content:center;padding:10px;cursor:pointer;border-bottom:2px solid transparent}
 .ig-tab.active{border-bottom:2px solid #111}
-.ig-tab svg{width:22px;height:22px;stroke:#999;fill:none;stroke-width:1.5}
+.ig-tab svg{width:20px;height:20px;stroke:#999;fill:none;stroke-width:1.5}
 .ig-tab.active svg{stroke:#111}
 .ig-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:2px}
 .ig-cell{position:relative;aspect-ratio:3/4;background:#efefef;overflow:hidden;cursor:pointer}
 .ig-cell img{width:100%;height:100%;object-fit:cover;display:block}
 .ig-cell-empty{display:flex;align-items:center;justify-content:center}
-.ig-cell-empty svg{width:24px;height:24px;stroke:#ccc;fill:none;stroke-width:1.5}
-.format-icon{position:absolute;top:6px;right:6px;filter:drop-shadow(0 1px 2px rgba(0,0,0,.6))}
-.status-pill{position:absolute;bottom:6px;left:6px;padding:2px 7px;border-radius:20px;font-size:9px;font-weight:600;backdrop-filter:blur(4px);white-space:nowrap}
+.ig-cell-empty svg{width:22px;height:22px;stroke:#ccc;fill:none;stroke-width:1.5}
+.format-icon{position:absolute;top:5px;right:5px;filter:drop-shadow(0 1px 2px rgba(0,0,0,.6))}
+.status-pill{position:absolute;bottom:5px;left:5px;padding:2px 6px;border-radius:20px;font-size:8px;font-weight:600;backdrop-filter:blur(4px);white-space:nowrap}
 .pill-publicado{background:rgba(34,197,94,.85);color:#fff}
 .pill-programado{background:rgba(245,158,11,.85);color:#fff}
 .pill-produccion{background:rgba(180,180,180,.85);color:#fff}
-.legend{display:flex;gap:10px;justify-content:center;padding:10px;border-top:1px solid #efefef;flex-wrap:wrap}
-.legend-item{display:flex;align-items:center;gap:5px;font-size:10px;color:#888}
-.legend-dot{width:8px;height:8px;border-radius:50%}
-.powered{text-align:center;margin-top:12px;font-size:11px;color:#bbb}
+.legend{display:flex;gap:8px;justify-content:center;padding:8px;border-top:1px solid #efefef;flex-wrap:wrap}
+.legend-item{display:flex;align-items:center;gap:4px;font-size:9px;color:#888}
+.legend-dot{width:7px;height:7px;border-radius:50%}
+.powered{text-align:center;margin-top:10px;font-size:10px;color:#bbb}
 .powered span{color:#888;font-weight:500}
 </style>
 </head>
@@ -72,6 +72,8 @@ var refreshTimer=null;
 var countdownTimer=null;
 var nextRefresh=null;
 var currentConfig={};
+var currentUsername='';
+var currentBio='';
 
 function getParams(){
   var p={};
@@ -101,8 +103,8 @@ function pillText(s){
 
 function formatIcon(f){
   f=(f||'').toLowerCase();
-  if(f.indexOf('reel')!==-1)return '<div class="format-icon"><svg viewBox="0 0 24 24" width="18" height="18"><rect x="1" y="1" width="22" height="22" rx="6" fill="rgba(0,0,0,0.55)"/><polygon points="10,8 16,12 10,16" fill="white"/></svg></div>';
-  if(f.indexOf('carrusel')!==-1)return '<div class="format-icon"><svg viewBox="0 0 26 22" width="20" height="18"><rect x="0" y="4" width="16" height="16" rx="2" fill="rgba(0,0,0,0.4)" stroke="white" stroke-width="1.2"/><rect x="8" y="0" width="16" height="16" rx="2" fill="rgba(0,0,0,0.65)" stroke="white" stroke-width="1.2"/></svg></div>';
+  if(f.indexOf('reel')!==-1)return '<div class="format-icon"><svg viewBox="0 0 24 24" width="16" height="16"><rect x="1" y="1" width="22" height="22" rx="6" fill="rgba(0,0,0,0.55)"/><polygon points="10,8 16,12 10,16" fill="white"/></svg></div>';
+  if(f.indexOf('carrusel')!==-1)return '<div class="format-icon"><svg viewBox="0 0 26 22" width="18" height="16"><rect x="0" y="4" width="16" height="16" rx="2" fill="rgba(0,0,0,0.4)" stroke="white" stroke-width="1.2"/><rect x="8" y="0" width="16" height="16" rx="2" fill="rgba(0,0,0,0.65)" stroke="white" stroke-width="1.2"/></svg></div>';
   return '';
 }
 
@@ -112,11 +114,11 @@ function switchTab(el){
 }
 
 function buildGrid(pages){
-  if(!pages||!pages.length)return '<div style="grid-column:1/-1;text-align:center;padding:2rem;font-size:13px;color:#888">No hay entradas para esta red aún.</div>';
+  if(!pages||!pages.length)return '<div style="grid-column:1/-1;text-align:center;padding:2rem;font-size:12px;color:#888">No hay entradas para esta red aún.</div>';
   var html='';
   for(var i=0;i<9;i++){
     var page=pages[i];
-    if(!page){html+='<div class="ig-cell ig-cell-empty"><svg viewBox="0 0 24 24" style="width:24px;height:24px;stroke:#ddd;fill:none;stroke-width:1.5"><rect x="3" y="3" width="18" height="18" rx="2"/></svg></div>';continue;}
+    if(!page){html+='<div class="ig-cell ig-cell-empty"><svg viewBox="0 0 24 24" style="width:22px;height:22px;stroke:#ddd;fill:none;stroke-width:1.5"><rect x="3" y="3" width="18" height="18" rx="2"/></svg></div>';continue;}
     var imgUrl=page._directImg||null;
     var status=page._status||'';
     var formato=page._formato||'';
@@ -126,24 +128,61 @@ function buildGrid(pages){
     if(imgUrl){
       html+='<div class="ig-cell"><img src="'+imgUrl+'" loading="lazy"/>'+fmtIcon+'<div class="status-pill '+pill+'">'+pillTxt+'</div></div>';
     }else{
-      html+='<div class="ig-cell ig-cell-empty"><svg viewBox="0 0 24 24" style="width:24px;height:24px;stroke:#ccc;fill:none;stroke-width:1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21,15 16,10 5,21"/></svg>'+fmtIcon+'<div class="status-pill '+pill+'" style="position:absolute;bottom:6px;left:6px;">'+pillTxt+'</div></div>';
+      html+='<div class="ig-cell ig-cell-empty"><svg viewBox="0 0 24 24" style="width:22px;height:22px;stroke:#ccc;fill:none;stroke-width:1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21,15 16,10 5,21"/></svg>'+fmtIcon+'<div class="status-pill '+pill+'" style="position:absolute;bottom:5px;left:5px;">'+pillTxt+'</div></div>';
     }
   }
   return html;
 }
 
+function updateHeader(){
+  var u=document.getElementById('disp-user');
+  var b=document.getElementById('disp-bio');
+  var a=document.getElementById('avatar-letter');
+  if(u)u.textContent=currentUsername||'@tu_usuario';
+  if(b)b.textContent=currentBio||'Social Media Manager · UGC Creator · @tumarca';
+  if(a)a.textContent=currentUsername?currentUsername.replace('@','').charAt(0).toUpperCase():'@';
+}
+
+function recargarGrid(cfg){
+  var gridEl=document.getElementById('grid-cells');
+  if(gridEl)gridEl.innerHTML='<div style="grid-column:1/-1;text-align:center;padding:2rem;font-size:12px;color:#888">Cargando...</div>';
+  fetch('/api/notion',{
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({token:cfg.token,dbid:cfg.dbid,sortby:cfg.sortby,red:cfg.red})
+  })
+  .then(function(res){return res.json().then(function(d){return{ok:res.ok,data:d}});})
+  .then(function(result){
+    var pages=result.ok?result.data.results:[];
+    var gridEl2=document.getElementById('grid-cells');
+    if(gridEl2){
+      gridEl2.innerHTML=buildGrid(pages);
+      var countEl=document.querySelector('.ig-stat strong');
+      if(countEl&&pages&&pages.length)countEl.textContent=pages.length;
+    }
+    updateHeader();
+  })
+  .catch(function(){
+    var gridEl3=document.getElementById('grid-cells');
+    if(gridEl3)gridEl3.innerHTML='<div style="grid-column:1/-1;text-align:center;padding:1rem;font-size:11px;color:#c0392b">Error de conexión.</div>';
+  });
+}
+
 function renderWidget(containerId,cfg,pages){
-  var avatarLetter=cfg.username?cfg.username.replace('@','').charAt(0).toUpperCase():'@';
-  var username=cfg.username||'@tu_usuario';
-  var bio=cfg.bio||'Social Media Manager · UGC Creator · Nombre de tu marca';
+  currentUsername=cfg.username||'';
+  currentBio=cfg.bio||'';
+  var avatarLetter=currentUsername?currentUsername.replace('@','').charAt(0).toUpperCase():'@';
+  var username=currentUsername||'@tu_usuario';
+  var bio=currentBio||'Social Media Manager · UGC Creator · @tumarca';
   var count=pages?pages.length:'—';
+
   document.getElementById(containerId).innerHTML=
     '<div class="ig-card">'+
     '<div class="ig-header">'+
     '<div class="ig-avatar"><div class="ig-avatar-inner"><span id="avatar-letter">'+avatarLetter+'</span></div></div>'+
     '<div style="flex:1">'+
     '<div class="ig-stats">'+
-    '<div class="ig-stat"><strong>'+count+'</strong><span>posts</span></div>'+
+    '<div class="ig-stat"><strong id="post-count">'+count+'</strong><span>posts</span></div>'+
     '<div class="ig-stat"><strong>—</strong><span>seguidores</span></div>'+
     '<div class="ig-stat"><strong>—</strong><span>seguidos</span></div>'+
     '</div>'+
@@ -155,7 +194,7 @@ function renderWidget(containerId,cfg,pages){
     '</div>'+
     '<div class="edit-panel" id="edit-panel">'+
     '<input id="edit-username" type="text" placeholder="@tu_usuario · @agencia · @marca"/>'+
-    '<input id="edit-bio" type="text" placeholder="Social Media Manager · UGC Creator · Nombre de tu marca"/>'+
+    '<input id="edit-bio" type="text" placeholder="Social Media Manager · UGC Creator · @tumarca"/>'+
     '<button id="edit-save">Guardar</button>'+
     '</div>'+
     '<div class="ig-toolbar">'+
@@ -190,44 +229,20 @@ function renderWidget(containerId,cfg,pages){
     var newUser=document.getElementById('edit-username').value.trim();
     var newBio=document.getElementById('edit-bio').value.trim();
     if(newUser){
-      document.getElementById('disp-user').textContent=newUser;
-      document.getElementById('avatar-letter').textContent=newUser.replace('@','').charAt(0).toUpperCase();
+      currentUsername=newUser;
       currentConfig.username=newUser;
     }
     if(newBio){
-      document.getElementById('disp-bio').textContent=newBio;
+      currentBio=newBio;
       currentConfig.bio=newBio;
     }
+    updateHeader();
     document.getElementById('edit-panel').classList.remove('open');
   });
 
   document.getElementById('btn-refresh').addEventListener('click',function(){
-    recargarGrid(currentConfig,'widget-area');
-    resetAutoRefresh(currentConfig,'widget-area');
-  });
-}
-
-function recargarGrid(cfg,containerId){
-  var gridEl=document.getElementById('grid-cells');
-  if(gridEl)gridEl.innerHTML='<div style="grid-column:1/-1;text-align:center;padding:2rem;font-size:13px;color:#888">Cargando...</div>';
-  fetch('/api/notion',{
-    method:'POST',
-    headers:{'Content-Type':'application/json'},
-    body:JSON.stringify({token:cfg.token,dbid:cfg.dbid,sortby:cfg.sortby,red:cfg.red})
-  })
-  .then(function(res){return res.json().then(function(d){return{ok:res.ok,data:d}});})
-  .then(function(result){
-    var pages=result.ok?result.data.results:[];
-    var gridEl2=document.getElementById('grid-cells');
-    if(gridEl2){
-      gridEl2.innerHTML=buildGrid(pages);
-      var countEl=document.querySelector('.ig-stat strong');
-      if(countEl&&pages&&pages.length)countEl.textContent=pages.length;
-    }
-  })
-  .catch(function(){
-    var gridEl3=document.getElementById('grid-cells');
-    if(gridEl3)gridEl3.innerHTML='<div style="grid-column:1/-1;text-align:center;padding:1rem;font-size:12px;color:#c0392b">Error de conexión.</div>';
+    recargarGrid(currentConfig);
+    resetAutoRefresh(currentConfig);
   });
 }
 
@@ -244,17 +259,17 @@ function startCountdown(){
   },1000);
 }
 
-function startAutoRefresh(cfg,containerId){
+function startAutoRefresh(cfg){
   if(refreshTimer)clearTimeout(refreshTimer);
   startCountdown();
   refreshTimer=setTimeout(function(){
-    recargarGrid(cfg,containerId);
-    startAutoRefresh(cfg,containerId);
+    recargarGrid(cfg);
+    startAutoRefresh(cfg);
   },REFRESH_MS);
 }
 
-function resetAutoRefresh(cfg,containerId){
-  startAutoRefresh(cfg,containerId);
+function resetAutoRefresh(cfg){
+  startAutoRefresh(cfg);
 }
 
 function getFormConfig(){
@@ -282,7 +297,7 @@ function renderSetup(){
     '<div class="field"><label>Token de integración</label><input id="p-token" type="password" placeholder="secret_xxxxxxxxxxxxxxxx"/></div>'+
     '<div class="field"><label>Database ID</label><input id="p-dbid" type="text" placeholder="ID de tu base de datos"/></div>'+
     '<div class="field"><label>Usuario</label><input id="p-username" type="text" placeholder="@tu_usuario"/></div>'+
-    '<div class="field"><label>Bio</label><input id="p-bio" type="text" placeholder="Social Media Manager · UGC Creator · Nombre de tu marca"/></div>'+
+    '<div class="field"><label>Bio</label><input id="p-bio" type="text" placeholder="Social Media Manager · UGC Creator · @tumarca"/></div>'+
     '<div class="field"><label>Red social</label><select id="p-red">'+
     '<option value="📱 Instagram">📱 Instagram</option>'+
     '<option value="🎬 TikTok">🎬 TikTok</option>'+
@@ -315,7 +330,7 @@ function renderSetup(){
     .then(function(result){
       var pages=result.ok?result.data.results:[];
       renderWidget('widget-area',cfg,pages);
-      startAutoRefresh(cfg,'widget-area');
+      startAutoRefresh(cfg);
     })
     .catch(function(){renderWidget('widget-area',cfg,[]);});
   });
@@ -354,16 +369,16 @@ if(embedMode){
   .then(function(result){
     var pages=result.ok?result.data.results:[];
     renderWidget('widget-area',cfg,pages);
-    startAutoRefresh(cfg,'widget-area');
+    startAutoRefresh(cfg);
   })
   .catch(function(){
     renderWidget('widget-area',cfg,[]);
-    startAutoRefresh(cfg,'widget-area');
+    startAutoRefresh(cfg);
   });
 }else{
   renderSetup();
 }
 </script>
-<!-- build v16 -->
+<!-- build v17 -->
 </body>
 </html>
