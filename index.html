@@ -74,6 +74,7 @@ var nextRefresh=null;
 var currentConfig={};
 var currentUsername='';
 var currentBio='';
+var widgetRendered=false;
 
 function getParams(){
   var p={};
@@ -89,15 +90,17 @@ var embedMode=!!(params.token&&params.dbid);
 
 function pillClass(s){
   if(!s)return 'pill-produccion';
-  if(s.indexOf('Publicado')!==-1||s.indexOf('Published')!==-1)return 'pill-publicado';
-  if(s.indexOf('Programado')!==-1||s.indexOf('Scheduled')!==-1)return 'pill-programado';
+  var sl=s.toLowerCase();
+  if(sl.indexOf('publicado')!==-1||sl.indexOf('published')!==-1)return 'pill-publicado';
+  if(sl.indexOf('programado')!==-1||sl.indexOf('scheduled')!==-1)return 'pill-programado';
   return 'pill-produccion';
 }
 
 function pillText(s){
   if(!s)return '🎬 En Producción';
-  if(s.indexOf('Publicado')!==-1||s.indexOf('Published')!==-1)return '🚀 Publicado';
-  if(s.indexOf('Programado')!==-1||s.indexOf('Scheduled')!==-1)return '⏰ Programado';
+  var sl=s.toLowerCase();
+  if(sl.indexOf('publicado')!==-1||sl.indexOf('published')!==-1)return '🚀 Publicado';
+  if(sl.indexOf('programado')!==-1||sl.indexOf('scheduled')!==-1)return '⏰ Programado';
   return '🎬 En Producción';
 }
 
@@ -169,8 +172,11 @@ function recargarGrid(cfg){
 }
 
 function renderWidget(containerId,cfg,pages){
-  currentUsername=cfg.username||'';
-  currentBio=cfg.bio||'';
+  if(!widgetRendered){
+    currentUsername=cfg.username||'';
+    currentBio=cfg.bio||'';
+    widgetRendered=true;
+  }
   var avatarLetter=currentUsername?currentUsername.replace('@','').charAt(0).toUpperCase():'@';
   var username=currentUsername||'@tu_usuario';
   var bio=currentBio||'Social Media Manager · UGC Creator · @tumarca';
@@ -228,14 +234,8 @@ function renderWidget(containerId,cfg,pages){
   document.getElementById('edit-save').addEventListener('click',function(){
     var newUser=document.getElementById('edit-username').value.trim();
     var newBio=document.getElementById('edit-bio').value.trim();
-    if(newUser){
-      currentUsername=newUser;
-      currentConfig.username=newUser;
-    }
-    if(newBio){
-      currentBio=newBio;
-      currentConfig.bio=newBio;
-    }
+    if(newUser){currentUsername=newUser;currentConfig.username=newUser;}
+    if(newBio){currentBio=newBio;currentConfig.bio=newBio;}
     updateHeader();
     document.getElementById('edit-panel').classList.remove('open');
   });
@@ -268,9 +268,7 @@ function startAutoRefresh(cfg){
   },REFRESH_MS);
 }
 
-function resetAutoRefresh(cfg){
-  startAutoRefresh(cfg);
-}
+function resetAutoRefresh(cfg){startAutoRefresh(cfg);}
 
 function getFormConfig(){
   var token=document.getElementById('p-token').value.trim();
@@ -280,14 +278,7 @@ function getFormConfig(){
     return null;
   }
   document.getElementById('error-box').innerHTML='';
-  return{
-    token:token,
-    dbid:dbid,
-    username:document.getElementById('p-username').value.trim(),
-    bio:document.getElementById('p-bio').value.trim(),
-    red:document.getElementById('p-red').value,
-    sortby:document.getElementById('p-sortby').value
-  };
+  return{token:token,dbid:dbid,username:document.getElementById('p-username').value.trim(),bio:document.getElementById('p-bio').value.trim(),red:document.getElementById('p-red').value,sortby:document.getElementById('p-sortby').value};
 }
 
 function renderSetup(){
@@ -321,11 +312,8 @@ function renderSetup(){
     var cfg=getFormConfig();
     if(!cfg)return;
     currentConfig=cfg;
-    fetch('/api/notion',{
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({token:cfg.token,dbid:cfg.dbid,sortby:cfg.sortby,red:cfg.red})
-    })
+    widgetRendered=false;
+    fetch('/api/notion',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({token:cfg.token,dbid:cfg.dbid,sortby:cfg.sortby,red:cfg.red})})
     .then(function(res){return res.json().then(function(d){return{ok:res.ok,data:d}});})
     .then(function(result){
       var pages=result.ok?result.data.results:[];
@@ -338,47 +326,27 @@ function renderSetup(){
   document.getElementById('btn-genurl').addEventListener('click',function(){
     var cfg=getFormConfig();
     if(!cfg)return;
-    var url=window.location.origin+window.location.pathname+
-      '?token='+encodeURIComponent(cfg.token)+
-      '&dbid='+encodeURIComponent(cfg.dbid)+
-      '&username='+encodeURIComponent(cfg.username)+
-      '&bio='+encodeURIComponent(cfg.bio)+
-      '&red='+encodeURIComponent(cfg.red)+
-      '&sortby='+encodeURIComponent(cfg.sortby);
+    var url=window.location.origin+window.location.pathname+'?token='+encodeURIComponent(cfg.token)+'&dbid='+encodeURIComponent(cfg.dbid)+'&username='+encodeURIComponent(cfg.username)+'&bio='+encodeURIComponent(cfg.bio)+'&red='+encodeURIComponent(cfg.red)+'&sortby='+encodeURIComponent(cfg.sortby);
     document.getElementById('url-output').innerHTML='<div class="success">Copia esta URL y pégala en Notion con /embed:<br><br>'+url+'</div>';
   });
 }
 
 if(embedMode){
-  var cfg={
-    token:params.token,
-    dbid:params.dbid.replace(/-/g,''),
-    username:params.username||'',
-    bio:params.bio||'',
-    red:params.red||'📱 Instagram',
-    sortby:params.sortby||'desc'
-  };
+  var cfg={token:params.token,dbid:params.dbid.replace(/-/g,''),username:params.username||'',bio:params.bio||'',red:params.red||'📱 Instagram',sortby:params.sortby||'desc'};
   currentConfig=cfg;
   document.getElementById('wrap').innerHTML='<div id="widget-area"></div><div class="powered">Widget by <span>evelynaguilar.com</span></div>';
-  fetch('/api/notion',{
-    method:'POST',
-    headers:{'Content-Type':'application/json'},
-    body:JSON.stringify({token:cfg.token,dbid:cfg.dbid,sortby:cfg.sortby,red:cfg.red})
-  })
+  fetch('/api/notion',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({token:cfg.token,dbid:cfg.dbid,sortby:cfg.sortby,red:cfg.red})})
   .then(function(res){return res.json().then(function(d){return{ok:res.ok,data:d}});})
   .then(function(result){
     var pages=result.ok?result.data.results:[];
     renderWidget('widget-area',cfg,pages);
     startAutoRefresh(cfg);
   })
-  .catch(function(){
-    renderWidget('widget-area',cfg,[]);
-    startAutoRefresh(cfg);
-  });
+  .catch(function(){renderWidget('widget-area',cfg,[]);startAutoRefresh(cfg);});
 }else{
   renderSetup();
 }
 </script>
-<!-- build v17 -->
+<!-- build v18 -->
 </body>
 </html>
