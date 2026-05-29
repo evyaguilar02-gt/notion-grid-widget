@@ -72,9 +72,8 @@ var refreshTimer=null;
 var countdownTimer=null;
 var nextRefresh=null;
 var currentConfig={};
-var currentUsername='';
-var currentBio='';
-var widgetRendered=false;
+var profileUsername='';
+var profileBio='';
 
 function getParams(){
   var p={};
@@ -137,16 +136,16 @@ function buildGrid(pages){
   return html;
 }
 
-function updateHeader(){
+function updateProfileDisplay(){
   var u=document.getElementById('disp-user');
   var b=document.getElementById('disp-bio');
   var a=document.getElementById('avatar-letter');
-  if(u)u.textContent=currentUsername||'@tu_usuario';
-  if(b)b.textContent=currentBio||'Social Media Manager · UGC Creator · @tumarca';
-  if(a)a.textContent=currentUsername?currentUsername.replace('@','').charAt(0).toUpperCase():'@';
+  if(u)u.textContent=profileUsername||'@tu_usuario';
+  if(b)b.textContent=profileBio||'Social Media Manager · UGC Creator · @tumarca';
+  if(a)a.textContent=profileUsername?profileUsername.replace('@','').charAt(0).toUpperCase():'@';
 }
 
-function recargarGrid(cfg){
+function recargarSoloGrid(cfg){
   var gridEl=document.getElementById('grid-cells');
   if(gridEl)gridEl.innerHTML='<div style="grid-column:1/-1;text-align:center;padding:2rem;font-size:12px;color:#888">Cargando...</div>';
   fetch('/api/notion',{
@@ -160,10 +159,9 @@ function recargarGrid(cfg){
     var gridEl2=document.getElementById('grid-cells');
     if(gridEl2){
       gridEl2.innerHTML=buildGrid(pages);
-      var countEl=document.querySelector('.ig-stat strong');
+      var countEl=document.getElementById('post-count');
       if(countEl&&pages&&pages.length)countEl.textContent=pages.length;
     }
-    updateHeader();
   })
   .catch(function(){
     var gridEl3=document.getElementById('grid-cells');
@@ -171,30 +169,19 @@ function recargarGrid(cfg){
   });
 }
 
-function renderWidget(containerId,cfg,pages){
-  if(!widgetRendered){
-    currentUsername=cfg.username||'';
-    currentBio=cfg.bio||'';
-    widgetRendered=true;
-  }
-  var avatarLetter=currentUsername?currentUsername.replace('@','').charAt(0).toUpperCase():'@';
-  var username=currentUsername||'@tu_usuario';
-  var bio=currentBio||'Social Media Manager · UGC Creator · @tumarca';
-  var count=pages?pages.length:'—';
-
-  document.getElementById(containerId).innerHTML=
-    '<div class="ig-card">'+
+function buildWidgetHTML(count,gridHTML){
+  return '<div class="ig-card">'+
     '<div class="ig-header">'+
-    '<div class="ig-avatar"><div class="ig-avatar-inner"><span id="avatar-letter">'+avatarLetter+'</span></div></div>'+
+    '<div class="ig-avatar"><div class="ig-avatar-inner"><span id="avatar-letter">@</span></div></div>'+
     '<div style="flex:1">'+
     '<div class="ig-stats">'+
-    '<div class="ig-stat"><strong id="post-count">'+count+'</strong><span>posts</span></div>'+
+    '<div class="ig-stat"><strong id="post-count">'+(count||'—')+'</strong><span>posts</span></div>'+
     '<div class="ig-stat"><strong>—</strong><span>seguidores</span></div>'+
     '<div class="ig-stat"><strong>—</strong><span>seguidos</span></div>'+
     '</div>'+
     '<div class="ig-info">'+
-    '<div class="ig-username" id="disp-user">'+username+'</div>'+
-    '<div class="ig-bio" id="disp-bio">'+bio+'</div>'+
+    '<div class="ig-username" id="disp-user">@tu_usuario</div>'+
+    '<div class="ig-bio" id="disp-bio">Social Media Manager · UGC Creator · @tumarca</div>'+
     '</div></div>'+
     '<button class="edit-btn" id="edit-toggle" title="Editar perfil">✏️</button>'+
     '</div>'+
@@ -215,13 +202,15 @@ function renderWidget(containerId,cfg,pages){
     '<div class="ig-tab" id="tab3"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M17 2l4 4-4 4"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><path d="M7 22l-4-4 4-4"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg></div>'+
     '<div class="ig-tab" id="tab4"><svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></div>'+
     '</div>'+
-    '<div class="ig-grid" id="grid-cells">'+buildGrid(pages)+'</div>'+
+    '<div class="ig-grid" id="grid-cells">'+gridHTML+'</div>'+
     '<div class="legend">'+
     '<div class="legend-item"><div class="legend-dot" style="background:#22c55e"></div>🚀 Publicado</div>'+
     '<div class="legend-item"><div class="legend-dot" style="background:#f59e0b"></div>⏰ Programado</div>'+
     '<div class="legend-item"><div class="legend-dot" style="background:#b4b4b4"></div>🎬 En Producción</div>'+
     '</div></div>';
+}
 
+function bindWidgetEvents(cfg){
   document.getElementById('tab1').addEventListener('click',function(){switchTab(this)});
   document.getElementById('tab2').addEventListener('click',function(){switchTab(this)});
   document.getElementById('tab3').addEventListener('click',function(){switchTab(this)});
@@ -234,15 +223,15 @@ function renderWidget(containerId,cfg,pages){
   document.getElementById('edit-save').addEventListener('click',function(){
     var newUser=document.getElementById('edit-username').value.trim();
     var newBio=document.getElementById('edit-bio').value.trim();
-    if(newUser){currentUsername=newUser;currentConfig.username=newUser;}
-    if(newBio){currentBio=newBio;currentConfig.bio=newBio;}
-    updateHeader();
+    if(newUser)profileUsername=newUser;
+    if(newBio)profileBio=newBio;
+    updateProfileDisplay();
     document.getElementById('edit-panel').classList.remove('open');
   });
 
   document.getElementById('btn-refresh').addEventListener('click',function(){
-    recargarGrid(currentConfig);
-    resetAutoRefresh(currentConfig);
+    recargarSoloGrid(cfg);
+    resetAutoRefresh(cfg);
   });
 }
 
@@ -263,7 +252,7 @@ function startAutoRefresh(cfg){
   if(refreshTimer)clearTimeout(refreshTimer);
   startCountdown();
   refreshTimer=setTimeout(function(){
-    recargarGrid(cfg);
+    recargarSoloGrid(cfg);
     startAutoRefresh(cfg);
   },REFRESH_MS);
 }
@@ -312,15 +301,23 @@ function renderSetup(){
     var cfg=getFormConfig();
     if(!cfg)return;
     currentConfig=cfg;
-    widgetRendered=false;
+    profileUsername=cfg.username||'';
+    profileBio=cfg.bio||'';
     fetch('/api/notion',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({token:cfg.token,dbid:cfg.dbid,sortby:cfg.sortby,red:cfg.red})})
     .then(function(res){return res.json().then(function(d){return{ok:res.ok,data:d}});})
     .then(function(result){
       var pages=result.ok?result.data.results:[];
-      renderWidget('widget-area',cfg,pages);
+      var count=pages?pages.length:'—';
+      document.getElementById('widget-area').innerHTML=buildWidgetHTML(count,buildGrid(pages));
+      updateProfileDisplay();
+      bindWidgetEvents(cfg);
       startAutoRefresh(cfg);
     })
-    .catch(function(){renderWidget('widget-area',cfg,[]);});
+    .catch(function(){
+      document.getElementById('widget-area').innerHTML=buildWidgetHTML('—',buildGrid([]));
+      updateProfileDisplay();
+      bindWidgetEvents(cfg);
+    });
   });
 
   document.getElementById('btn-genurl').addEventListener('click',function(){
@@ -334,19 +331,29 @@ function renderSetup(){
 if(embedMode){
   var cfg={token:params.token,dbid:params.dbid.replace(/-/g,''),username:params.username||'',bio:params.bio||'',red:params.red||'📱 Instagram',sortby:params.sortby||'desc'};
   currentConfig=cfg;
+  profileUsername=cfg.username||'';
+  profileBio=cfg.bio||'';
   document.getElementById('wrap').innerHTML='<div id="widget-area"></div><div class="powered">Widget by <span>evelynaguilar.com</span></div>';
   fetch('/api/notion',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({token:cfg.token,dbid:cfg.dbid,sortby:cfg.sortby,red:cfg.red})})
   .then(function(res){return res.json().then(function(d){return{ok:res.ok,data:d}});})
   .then(function(result){
     var pages=result.ok?result.data.results:[];
-    renderWidget('widget-area',cfg,pages);
+    var count=pages?pages.length:'—';
+    document.getElementById('widget-area').innerHTML=buildWidgetHTML(count,buildGrid(pages));
+    updateProfileDisplay();
+    bindWidgetEvents(cfg);
     startAutoRefresh(cfg);
   })
-  .catch(function(){renderWidget('widget-area',cfg,[]);startAutoRefresh(cfg);});
+  .catch(function(){
+    document.getElementById('widget-area').innerHTML=buildWidgetHTML('—',buildGrid([]));
+    updateProfileDisplay();
+    bindWidgetEvents(cfg);
+    startAutoRefresh(cfg);
+  });
 }else{
   renderSetup();
 }
 </script>
-<!-- build v18 -->
+<!-- build v19 -->
 </body>
 </html>
